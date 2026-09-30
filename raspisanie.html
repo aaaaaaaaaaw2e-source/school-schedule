@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Расписание школы</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: system-ui, Arial, sans-serif;
+    background: #eef2f7;
+    color: #1a1a1a;
+    padding: 20px;
+  }
+
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  header {
+    background: #1e3a8a;
+    color: #fff;
+    padding: 24px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  header h1 { font-size: 22px; }
+  header input {
+    font-size: 18px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    outline: none;
+    width: 280px;
+  }
+  header input::placeholder { color: #cbd5e1; }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.15s;
+  }
+
+  .btn-save { background: #16a34a; color: #fff; }
+  .btn-print { background: #2563eb; color: #fff; }
+  .btn-clear { background: #dc2626; color: #fff; }
+  .btn-add { background: #f59e0b; color: #fff; }
+
+  button:hover { opacity: 0.88; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  }
+
+  th, td {
+    border: 1px solid #e2e8f0;
+    padding: 8px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 14px;
+  }
+
+  th {
+    background: #1e3a8a;
+    color: #fff;
+    font-weight: 600;
+    padding: 12px 8px;
+  }
+
+  th.lesson-num, td.lesson-num {
+    background: #f1f5f9;
+    font-weight: 700;
+    width: 90px;
+    font-size: 13px;
+  }
+
+  td.cell {
+    height: 56px;
+    min-width: 130px;
+    cursor: text;
+    outline: none;
+    transition: background 0.1s;
+  }
+
+  td.cell:focus {
+    background: #dbeafe;
+    box-shadow: inset 0 0 0 2px #2563eb;
+  }
+
+  td.cell:empty::before {
+    content: "—";
+    color: #cbd5e1;
+  }
+
+  .hint {
+    margin-top: 14px;
+    font-size: 13px;
+    color: #64748b;
+    text-align: center;
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .controls, .hint { display: none; }
+    header { background: #fff; color: #000; border-bottom: 2px solid #000; border-radius: 0; }
+    header input { color: #000; background: transparent; border: none; font-weight: 700; }
+    table { box-shadow: none; }
+    th { background: #e5e7eb !important; color: #000 !important; -webkit-print-color-adjust: exact; }
+    th.lesson-num, td.lesson-num { background: #f3f4f6 !important; }
+  }
+
+  @media (max-width: 700px) {
+    th, td { font-size: 12px; padding: 4px; }
+    td.cell { height: 44px; min-width: 80px; }
+    header h1 { font-size: 18px; }
+    header input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>📅 Расписание</h1>
+    <input id="schoolName" placeholder="Название школы / класса" value="">
+  </header>
+
+  <div class="controls">
+    <button class="btn-save" onclick="saveAll()">💾 Сохранить</button>
+    <button class="btn-print" onclick="window.print()">🖨️ Печать / PDF</button>
+    <button class="btn-add" onclick="addRow()">➕ Добавить урок</button>
+    <button class="btn-clear" onclick="clearAll()">🗑️ Очистить всё</button>
+  </div>
+
+  <table id="tbl">
+    <thead>
+      <tr>
+        <th class="lesson-num">Урок</th>
+        <th>Понедельник</th>
+        <th>Вторник</th>
+        <th>Среда</th>
+        <th>Четверг</th>
+        <th>Пятница</th>
+        <th>Суббота</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+
+  <p class="hint">Кликните в клетку и впишите предмет. Потом нажмите «Сохранить».</p>
+
+</div>
+
+<script>
+const STORAGE_KEY = 'school_schedule_v1';
+const DAYS = 6; // Пн..Сб
+const DEFAULT_ROWS = 7;
+
+function buildTable(rows) {
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  for (let r = 0; r < rows; r++) {
+    const tr = document.createElement('tr');
+
+    const th = document.createElement('td');
+    th.className = 'lesson-num';
+    th.textContent = (r + 1) + ' урок';
+    tr.appendChild(th);
+
+    for (let d = 0; d < DAYS; d++) {
+      const td = document.createElement('td');
+      td.className = 'cell';
+      td.contentEditable = 'true';
+      td.dataset.row = r;
+      td.dataset.day = d;
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+}
+
+function addRow() {
+  const tbody = document.getElementById('tbody');
+  const rows = tbody.querySelectorAll('tr').length;
+
+  const tr = document.createElement('tr');
+  const th = document.createElement('td');
+  th.className = 'lesson-num';
+  th.textContent = (rows + 1) + ' урок';
+  tr.appendChild(th);
+
+  for (let d = 0; d < DAYS; d++) {
+    const td = document.createElement('td');
+    td.className = 'cell';
+    td.contentEditable = 'true';
+    td.dataset.row = rows;
+    td.dataset.day = d;
+    tr.appendChild(td);
+  }
+  tbody.appendChild(tr);
+}
+
+function saveAll() {
+  const data = [];
+  document.querySelectorAll('#tbody tr').forEach(tr => {
+    const row = [];
+    tr.querySelectorAll('td.cell').forEach(td => row.push(td.textContent.trim()));
+    data.push(row);
+  });
+  const payload = {
+    school: document.getElementById('schoolName').value,
+    grid: data
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  alert('Сохранено! ✅');
+}
+
+function loadAll() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) {
+    buildTable(DEFAULT_ROWS);
+    return;
+  }
+  try {
+    const data = JSON.parse(raw);
+    document.getElementById('schoolName').value = data.school || '';
+    buildTable(data.grid.length);
+    const rows = document.querySelectorAll('#tbody tr');
+    data.grid.forEach((row, r) => {
+      row.forEach((val, d) => {
+        const td = rows[r].querySelector(`td[data-day="${d}"]`);
+        if (td) td.textContent = val;
+      });
+    });
+  } catch (e) {
+    buildTable(DEFAULT_ROWS);
+  }
+}
+
+function clearAll() {
+  if (!confirm('Точно очистить всё расписание?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  document.getElementById('schoolName').value = '';
+  buildTable(DEFAULT_ROWS);
+}
+
+// Автосохранение при вводе (раз в 1 сек)
+let timer = null;
+document.addEventListener('input', () => {
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    const data = [];
+    document.querySelectorAll('#tbody tr').forEach(tr => {
+      const row = [];
+      tr.querySelectorAll('td.cell').forEach(td => row.push(td.textContent.trim()));
+      data.push(row);
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      school: document.getElementById('schoolName').value,
+      grid: data
+    }));
+  }, 1000);
+});
+
+loadAll();
+</script>
+</body>
+</html>
