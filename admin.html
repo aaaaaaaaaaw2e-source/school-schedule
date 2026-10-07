@@ -23,8 +23,18 @@
     <button class="btn btn-load" onclick="load()">📥 Загрузить</button>
   </div>
 
-  <div class="panel">
-    <input type="text" id="schoolName" placeholder="Название (например, 10А)">
+  <div class="picker">
+    <div class="picker-row">
+      <span class="picker-label">Класс:</span>
+      <div class="picker-btns" id="classBtns"></div>
+    </div>
+    <div class="picker-row">
+      <span class="picker-label">Группа:</span>
+      <div class="picker-btns" id="groupBtns"></div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:16px;">
     <button class="btn btn-save"  onclick="save()">💾 Сохранить для всех</button>
     <button class="btn btn-add"   onclick="addRow()">➕ Добавить урок</button>
     <button class="btn btn-print" onclick="window.print()">🖨️ Печать</button>
@@ -52,7 +62,9 @@
 const DAYS = 5;
 const LS_KEY = 'admin_creds_v1';
 let sha = null;
-let currentClass = '10А';
+let DATA = null;
+let CURRENT_CLASS = '10А';
+let CURRENT_GROUP = '1';
 
 window.addEventListener('DOMContentLoaded', () => {
   const c = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
@@ -93,33 +105,49 @@ async function load() {
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
-    const content = JSON.parse(
+    DATA = JSON.parse(
       decodeURIComponent(escape(atob(json.content.replace(/\n/g, ''))))
     );
     sha = json.sha;
-    renderClassPicker(content);
+    renderClassBtns();
+    renderGroupBtns();
+    buildTable(DATA.classes[CURRENT_CLASS][CURRENT_GROUP]);
     showMsg('Загружено из GitHub.', 'ok');
   } catch (e) {
     showMsg('Ошибка: ' + e.message, 'err');
   }
 }
 
-function renderClassPicker(data) {
-  const panel = document.createElement('div');
-  panel.className = 'panel';
-  panel.innerHTML = '<strong>Выберите класс:</strong>';
-  Object.keys(data.classes).forEach(cls => {
-    const btn = document.createElement('button');
-    btn.className = 'btn btn-load';
-    btn.textContent = cls;
-    btn.onclick = () => {
-      currentClass = cls;
-      document.getElementById('schoolName').value = cls;
-      buildTable(data.classes[cls].grid);
+function renderClassBtns() {
+  const box = document.getElementById('classBtns');
+  box.innerHTML = '';
+  Object.keys(DATA.classes).forEach(cls => {
+    const b = document.createElement('button');
+    b.className = 'pick-btn' + (cls === CURRENT_CLASS ? ' active' : '');
+    b.textContent = cls;
+    b.onclick = () => {
+      CURRENT_CLASS = cls;
+      renderClassBtns();
+      buildTable(DATA.classes[CURRENT_CLASS][CURRENT_GROUP]);
     };
-    panel.appendChild(btn);
+    box.appendChild(b);
   });
-  document.querySelectorAll('.panel')[1].after(panel);
+}
+
+function renderGroupBtns() {
+  const box = document.getElementById('groupBtns');
+  box.innerHTML = '';
+  ['1', '2'].forEach(g => {
+    const b = document.createElement('button');
+    b.className = 'pick-btn' + (g === CURRENT_GROUP ? ' active' : '');
+    b.textContent = 'Группа ' + g;
+    b.onclick = () => {
+      CURRENT_GROUP = g;
+      renderGroupBtns();
+      buildTable(DATA.classes[CURRENT_CLASS][CURRENT_GROUP]);
+    };
+    box.appendChild(b);
+  });
 }
 
 function buildTable(grid) {
@@ -172,25 +200,16 @@ async function save() {
     grid.push(row);
   });
 
-  // Получаем текущие данные, обновляем нужный класс
-  let full;
-  try {
-    const res = await fetch(apiUrl(c) + '?t=' + Date.now(), {
-      headers: { 'Authorization': 'token ' + c.token, 'Accept': 'application/vnd.github+json' }
-    });
-    const json = await res.json();
-    full = JSON.parse(decodeURIComponent(escape(atob(json.content.replace(/\n/g, '')))));
-    sha = json.sha;
-  } catch (e) {
-    showMsg('Не удалось прочитать data.json', 'err');
+  if (!DATA) {
+    showMsg('Сначала нажмите «Загрузить».', 'err');
     return;
   }
 
-  full.classes[currentClass] = { grid };
+  DATA.classes[CURRENT_CLASS][CURRENT_GROUP] = grid;
 
   const body = {
-    message: 'Обновление ' + currentClass + ' ' + new Date().toISOString(),
-    content: btoa(unescape(encodeURIComponent(JSON.stringify(full, null, 2)))),
+    message: 'Обновление ' + CURRENT_CLASS + ' гр.' + CURRENT_GROUP + ' ' + new Date().toISOString(),
+    content: btoa(unescape(encodeURIComponent(JSON.stringify(DATA, null, 2)))),
     sha
   };
 
