@@ -11,12 +11,10 @@
 
   <header>
     <div>
-      <h1>📅 Расписание 10 классов</h1>
+      <h1 id="title">📅 Расписание 10А — Группа 1</h1>
       <p>Обновляется автоматически. Обновите страницу, чтобы увидеть свежие данные.</p>
     </div>
   </header>
-
-  <div class="tabs" id="tabs"></div>
 
   <table>
     <thead>
@@ -34,50 +32,82 @@
 
   <p class="status" id="status">Загрузка…</p>
 
+  <!-- Панель выбора класса и группы -->
+  <div class="picker">
+    <div class="picker-row">
+      <span class="picker-label">Класс:</span>
+      <div class="picker-btns" id="classBtns"></div>
+    </div>
+    <div class="picker-row">
+      <span class="picker-label">Группа:</span>
+      <div class="picker-btns" id="groupBtns"></div>
+    </div>
+  </div>
+
 </div>
 
 <script>
 const DAYS = 5;
 let DATA = null;
-let CURRENT = '10А';
+let CURRENT_CLASS = '10А';
+let CURRENT_GROUP = '1';
 
 async function load() {
   const status = document.getElementById('status');
   try {
     const res = await fetch('data.json?t=' + Date.now());
     DATA = await res.json();
-    renderTabs();
-    renderTable(CURRENT);
+    renderClassBtns();
+    renderGroupBtns();
+    renderTable();
     status.textContent = 'Обновлено: ' + new Date().toLocaleString('ru-RU');
   } catch (e) {
     status.textContent = 'Ошибка загрузки: ' + e.message;
   }
 }
 
-function renderTabs() {
-  const tabs = document.getElementById('tabs');
-  tabs.innerHTML = '';
+function renderClassBtns() {
+  const box = document.getElementById('classBtns');
+  box.innerHTML = '';
   Object.keys(DATA.classes).forEach(cls => {
-    const btn = document.createElement('button');
-    btn.className = 'tab' + (cls === CURRENT ? ' active' : '');
-    btn.textContent = cls;
-    btn.onclick = () => {
-      CURRENT = cls;
-      renderTabs();
-      renderTable(cls);
+    const b = document.createElement('button');
+    b.className = 'pick-btn' + (cls === CURRENT_CLASS ? ' active' : '');
+    b.textContent = cls;
+    b.onclick = () => {
+      CURRENT_CLASS = cls;
+      renderClassBtns();
+      renderTable();
     };
-    tabs.appendChild(btn);
+    box.appendChild(b);
   });
 }
 
-function renderTable(cls) {
+function renderGroupBtns() {
+  const box = document.getElementById('groupBtns');
+  box.innerHTML = '';
+  ['1', '2'].forEach(g => {
+    const b = document.createElement('button');
+    b.className = 'pick-btn' + (g === CURRENT_GROUP ? ' active' : '');
+    b.textContent = 'Группа ' + g;
+    b.onclick = () => {
+      CURRENT_GROUP = g;
+      renderGroupBtns();
+      renderTable();
+    };
+    box.appendChild(b);
+  });
+}
+
+function renderTable() {
+  document.getElementById('title').textContent =
+    '📅 Расписание ' + CURRENT_CLASS + ' — Группа ' + CURRENT_GROUP;
+
   const tbody = document.getElementById('tbody');
   tbody.innerHTML = '';
-  const grid = DATA.classes[cls].grid;
+  const grid = DATA.classes[CURRENT_CLASS][CURRENT_GROUP];
 
   grid.forEach((row, r) => {
     const tr = document.createElement('tr');
-
     const th = document.createElement('td');
     th.className = 'lesson-num';
     th.textContent = (r + 1) + ' урок';
