@@ -4,70 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Админ — Расписание</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, Arial, sans-serif; background: #eef2f7; padding: 20px; }
-  .wrap { max-width: 1200px; margin: 0 auto; }
-  header {
-    background: #7c2d12; color: #fff; padding: 20px;
-    border-radius: 12px; margin-bottom: 16px;
-  }
-  header h1 { font-size: 20px; }
-  .panel {
-    background: #fff; padding: 16px; border-radius: 10px;
-    margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 10px;
-  }
-  .panel input[type=text], .panel input[type=password] {
-    padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px;
-    font-size: 14px; flex: 1; min-width: 200px;
-  }
-  button {
-    padding: 10px 18px; border: none; border-radius: 8px;
-    cursor: pointer; font-weight: 600; font-size: 14px;
-  }
-  .btn-load { background: #2563eb; color: #fff; }
-  .btn-save { background: #16a34a; color: #fff; }
-  .btn-add { background: #f59e0b; color: #fff; }
-  .btn-del { background: #dc2626; color: #fff; }
-  button:hover { opacity: 0.88; }
-  table {
-    width: 100%; border-collapse: collapse; background: #fff;
-    border-radius: 12px; overflow: hidden;
-  }
-  th, td { border: 1px solid #e2e8f0; padding: 6px; text-align: center; font-size: 14px; }
-  th { background: #7c2d12; color: #fff; }
-  th.lesson-num, td.lesson-num { background: #f1f5f9; font-weight: 700; width: 90px; }
-  td.cell { height: 50px; outline: none; cursor: text; }
-  td.cell:focus { background: #dbeafe; box-shadow: inset 0 0 0 2px #2563eb; }
-  .msg { padding: 10px 14px; border-radius: 8px; margin-bottom: 12px; font-size: 14px; display: none; }
-  .msg.ok { background: #dcfce7; color: #166534; display: block; }
-  .msg.err { background: #fee2e2; color: #991b1b; display: block; }
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="wrap">
 
   <header>
-    <h1>🔧 Админ-панель расписания</h1>
-    <p style="opacity:0.8;font-size:13px;margin-top:6px;">
-      Не давайте эту страницу никому — с токеном можно менять сайт.
-    </p>
+    <div>
+      <h1>🔧 Админ-панель</h1>
+      <p>Не давайте эту страницу никому — с токеном можно менять сайт.</p>
+    </div>
   </header>
 
   <div class="panel">
     <input type="text" id="owner" placeholder="Владелец репо (логин)">
-    <input type="text" id="repo" placeholder="Имя репозитория" value="school-schedule">
-    <input type="password" id="token" placeholder="GitHub-токен (сохранится только у вас)">
-    <button class="btn-load" onclick="load()">📥 Загрузить</button>
+    <input type="text" id="repo"  placeholder="Имя репозитория" value="school-schedule">
+    <input type="password" id="token" placeholder="GitHub-токен">
+    <button class="btn btn-load" onclick="load()">📥 Загрузить</button>
   </div>
 
   <div class="panel">
-    <input type="text" id="schoolName" placeholder="Название школы / класса">
-  </div>
-
-  <div class="panel">
-    <button class="btn-save" onclick="save()">💾 Сохранить (опубликовать для всех)</button>
-    <button class="btn-add" onclick="addRow()">➕ Добавить урок</button>
+    <input type="text" id="schoolName" placeholder="Название (например, 10А)">
+    <button class="btn btn-save"  onclick="save()">💾 Сохранить для всех</button>
+    <button class="btn btn-add"   onclick="addRow()">➕ Добавить урок</button>
+    <button class="btn btn-print" onclick="window.print()">🖨️ Печать</button>
   </div>
 
   <div id="msg" class="msg"></div>
@@ -76,12 +36,11 @@
     <thead>
       <tr>
         <th class="lesson-num">Урок</th>
-        <th>Понедельник</th>
-        <th>Вторник</th>
-        <th>Среда</th>
-        <th>Четверг</th>
-        <th>Пятница</th>
-        <th>Суббота</th>
+        <th class="day-header" data-day="0">Понедельник</th>
+        <th class="day-header" data-day="1">Вторник</th>
+        <th class="day-header" data-day="2">Среда</th>
+        <th class="day-header" data-day="3">Четверг</th>
+        <th class="day-header" data-day="4">Пятница</th>
       </tr>
     </thead>
     <tbody id="tbody"></tbody>
@@ -90,20 +49,21 @@
 </div>
 
 <script>
-const DAYS = 6;
+const DAYS = 5;
 const LS_KEY = 'admin_creds_v1';
+let sha = null;
+let currentClass = '10А';
 
-// Подставить сохранённые логин/репо/токен
 window.addEventListener('DOMContentLoaded', () => {
   const c = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
   document.getElementById('owner').value = c.owner || '';
-  document.getElementById('repo').value = c.repo || 'school-schedule';
+  document.getElementById('repo').value  = c.repo  || 'school-schedule';
   document.getElementById('token').value = c.token || '';
 });
 
 function creds() {
   const owner = document.getElementById('owner').value.trim();
-  const repo = document.getElementById('repo').value.trim();
+  const repo  = document.getElementById('repo').value.trim();
   const token = document.getElementById('token').value.trim();
   if (!owner || !repo || !token) {
     showMsg('Заполните владельца, репозиторий и токен.', 'err');
@@ -121,47 +81,51 @@ function showMsg(text, type) {
   const m = document.getElementById('msg');
   m.textContent = text;
   m.className = 'msg ' + type;
-  setTimeout(() => { m.className = 'msg'; }, 4000);
+  setTimeout(() => { m.className = 'msg'; }, 5000);
 }
-
-let sha = null;
 
 async function load() {
   const c = creds();
   if (!c) return;
-
   try {
     const res = await fetch(apiUrl(c) + '?t=' + Date.now(), {
       headers: { 'Authorization': 'token ' + c.token, 'Accept': 'application/vnd.github+json' }
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
-
     const content = JSON.parse(
       decodeURIComponent(escape(atob(json.content.replace(/\n/g, ''))))
     );
     sha = json.sha;
-
-    document.getElementById('schoolName').value = content.school || '';
-    buildTable(content.grid.length || 7);
-    const rows = document.querySelectorAll('#tbody tr');
-    content.grid.forEach((row, r) => {
-      row.forEach((val, d) => {
-        const td = rows[r]?.querySelector(`td[data-day="${d}"]`);
-        if (td) td.textContent = val;
-      });
-    });
-
+    renderClassPicker(content);
     showMsg('Загружено из GitHub.', 'ok');
   } catch (e) {
-    showMsg('Ошибка загрузки: ' + e.message, 'err');
+    showMsg('Ошибка: ' + e.message, 'err');
   }
 }
 
-function buildTable(rows) {
+function renderClassPicker(data) {
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML = '<strong>Выберите класс:</strong>';
+  Object.keys(data.classes).forEach(cls => {
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-load';
+    btn.textContent = cls;
+    btn.onclick = () => {
+      currentClass = cls;
+      document.getElementById('schoolName').value = cls;
+      buildTable(data.classes[cls].grid);
+    };
+    panel.appendChild(btn);
+  });
+  document.querySelectorAll('.panel')[1].after(panel);
+}
+
+function buildTable(grid) {
   const tbody = document.getElementById('tbody');
   tbody.innerHTML = '';
-  for (let r = 0; r < rows; r++) {
+  grid.forEach((row, r) => {
     const tr = document.createElement('tr');
     const th = document.createElement('td');
     th.className = 'lesson-num';
@@ -172,10 +136,11 @@ function buildTable(rows) {
       td.className = 'cell';
       td.contentEditable = 'true';
       td.dataset.day = d;
+      td.textContent = row[d] || '';
       tr.appendChild(td);
     }
     tbody.appendChild(tr);
-  }
+  });
 }
 
 function addRow() {
@@ -207,16 +172,27 @@ async function save() {
     grid.push(row);
   });
 
-  const payload = {
-    school: document.getElementById('schoolName').value,
-    grid
-  };
+  // Получаем текущие данные, обновляем нужный класс
+  let full;
+  try {
+    const res = await fetch(apiUrl(c) + '?t=' + Date.now(), {
+      headers: { 'Authorization': 'token ' + c.token, 'Accept': 'application/vnd.github+json' }
+    });
+    const json = await res.json();
+    full = JSON.parse(decodeURIComponent(escape(atob(json.content.replace(/\n/g, '')))));
+    sha = json.sha;
+  } catch (e) {
+    showMsg('Не удалось прочитать data.json', 'err');
+    return;
+  }
+
+  full.classes[currentClass] = { grid };
 
   const body = {
-    message: 'Обновление расписания ' + new Date().toISOString(),
-    content: btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2)))),
+    message: 'Обновление ' + currentClass + ' ' + new Date().toISOString(),
+    content: btoa(unescape(encodeURIComponent(JSON.stringify(full, null, 2)))),
+    sha
   };
-  if (sha) body.sha = sha;
 
   try {
     const res = await fetch(apiUrl(c), {
@@ -228,13 +204,10 @@ async function save() {
       },
       body: JSON.stringify(body)
     });
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error('HTTP ' + res.status + ': ' + err);
-    }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
     sha = json.content.sha;
-    showMsg('Сохранено! Все увидят изменения через 1–2 минуты (обновите страницу).', 'ok');
+    showMsg('Сохранено! Все увидят через 1–2 минуты.', 'ok');
   } catch (e) {
     showMsg('Ошибка сохранения: ' + e.message, 'err');
   }
