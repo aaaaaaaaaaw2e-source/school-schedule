@@ -12,35 +12,30 @@
   <header>
     <div>
       <h1>🔧 Админ-панель</h1>
-      <p>Не давайте эту страницу никому — с токеном можно менять сайт.</p>
+      <p>Выберите класс и группу, тыкайте в клетки и редактируйте.</p>
     </div>
+    <button class="btn btn-save" onclick="save()">💾 Сохранить для всех</button>
   </header>
 
-  <div class="panel">
-    <input type="text" id="owner" placeholder="Владелец репо (логин)">
-    <input type="text" id="repo"  placeholder="Имя репозитория" value="school-schedule">
-    <input type="password" id="token" placeholder="GitHub-токен">
+  <div class="admin-panel">
+    <input type="text" id="owner" placeholder="Владелец репо (логин)" style="flex:1;">
+    <input type="text" id="repo"  placeholder="Репозиторий" value="school-schedule" style="flex:1;">
+    <input type="password" id="token" placeholder="GitHub-токен" style="flex:1;">
     <button class="btn btn-load" onclick="load()">📥 Загрузить</button>
   </div>
 
-  <div class="picker">
-    <div class="picker-row">
-      <span class="picker-label">Класс:</span>
-      <div class="picker-btns" id="classBtns"></div>
-    </div>
-    <div class="picker-row">
-      <span class="picker-label">Группа:</span>
-      <div class="picker-btns" id="groupBtns"></div>
-    </div>
-  </div>
-
-  <div class="panel" style="margin-top:16px;">
-    <button class="btn btn-save"  onclick="save()">💾 Сохранить для всех</button>
-    <button class="btn btn-add"   onclick="addRow()">➕ Добавить урок</button>
-    <button class="btn btn-print" onclick="window.print()">🖨️ Печать</button>
-  </div>
-
   <div id="msg" class="msg"></div>
+
+  <div class="controls">
+    <div class="control-row">
+      <span class="control-label">Класс:</span>
+      <div class="btn-group" id="class-btns"></div>
+    </div>
+    <div class="control-row">
+      <span class="control-label">Группа:</span>
+      <div class="btn-group" id="group-btns"></div>
+    </div>
+  </div>
 
   <table>
     <thead>
@@ -60,11 +55,11 @@
 
 <script>
 const DAYS = 5;
-const LS_KEY = 'admin_creds_v1';
-let sha = null;
+const LS_KEY = 'admin_creds_v3';
 let DATA = null;
 let CURRENT_CLASS = '10А';
-let CURRENT_GROUP = '1';
+let CURRENT_GROUP = 'Группа 1';
+let sha = null;
 
 window.addEventListener('DOMContentLoaded', () => {
   const c = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
@@ -78,7 +73,7 @@ function creds() {
   const repo  = document.getElementById('repo').value.trim();
   const token = document.getElementById('token').value.trim();
   if (!owner || !repo || !token) {
-    showMsg('Заполните владельца, репозиторий и токен.', 'err');
+    showMsg('Заполните все поля', 'err');
     return null;
   }
   localStorage.setItem(LS_KEY, JSON.stringify({ owner, repo, token }));
@@ -93,7 +88,7 @@ function showMsg(text, type) {
   const m = document.getElementById('msg');
   m.textContent = text;
   m.className = 'msg ' + type;
-  setTimeout(() => { m.className = 'msg'; }, 5000);
+  setTimeout(() => { m.className = 'msg'; }, 4000);
 }
 
 async function load() {
@@ -105,112 +100,82 @@ async function load() {
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
-    DATA = JSON.parse(
-      decodeURIComponent(escape(atob(json.content.replace(/\n/g, ''))))
-    );
+    DATA = JSON.parse(decodeURIComponent(escape(atob(json.content.replace(/\n/g, '')))));
     sha = json.sha;
-    renderClassBtns();
-    renderGroupBtns();
-    buildTable(DATA.classes[CURRENT_CLASS][CURRENT_GROUP]);
+    renderButtons();
+    renderTable();
     showMsg('Загружено из GitHub.', 'ok');
   } catch (e) {
     showMsg('Ошибка: ' + e.message, 'err');
   }
 }
 
-function renderClassBtns() {
-  const box = document.getElementById('classBtns');
-  box.innerHTML = '';
-  Object.keys(DATA.classes).forEach(cls => {
-    const b = document.createElement('button');
-    b.className = 'pick-btn' + (cls === CURRENT_CLASS ? ' active' : '');
-    b.textContent = cls;
-    b.onclick = () => {
+function renderButtons() {
+  if(!DATA) return;
+  const classBtns = document.getElementById('class-btns');
+  const groupBtns = document.getElementById('group-btns');
+  classBtns.innerHTML = '';
+  groupBtns.innerHTML = '';
+
+  Object.keys(DATA).forEach(cls => {
+    const btn = document.createElement('button');
+    btn.className = 'ctrl-btn' + (cls === CURRENT_CLASS ? ' active' : '');
+    btn.textContent = cls;
+    btn.onclick = () => {
       CURRENT_CLASS = cls;
-      renderClassBtns();
-      buildTable(DATA.classes[CURRENT_CLASS][CURRENT_GROUP]);
+      renderButtons();
+      renderTable();
     };
-    box.appendChild(b);
+    classBtns.appendChild(btn);
+  });
+
+  Object.keys(DATA[CURRENT_CLASS]).forEach(grp => {
+    const btn = document.createElement('button');
+    btn.className = 'ctrl-btn' + (grp === CURRENT_GROUP ? ' active' : '');
+    btn.textContent = grp;
+    btn.onclick = () => {
+      CURRENT_GROUP = grp;
+      renderButtons();
+      renderTable();
+    };
+    groupBtns.appendChild(btn);
   });
 }
 
-function renderGroupBtns() {
-  const box = document.getElementById('groupBtns');
-  box.innerHTML = '';
-  ['1', '2'].forEach(g => {
-    const b = document.createElement('button');
-    b.className = 'pick-btn' + (g === CURRENT_GROUP ? ' active' : '');
-    b.textContent = 'Группа ' + g;
-    b.onclick = () => {
-      CURRENT_GROUP = g;
-      renderGroupBtns();
-      buildTable(DATA.classes[CURRENT_CLASS][CURRENT_GROUP]);
-    };
-    box.appendChild(b);
-  });
-}
-
-function buildTable(grid) {
+function renderTable() {
   const tbody = document.getElementById('tbody');
   tbody.innerHTML = '';
+  const grid = DATA[CURRENT_CLASS][CURRENT_GROUP].grid;
+
   grid.forEach((row, r) => {
     const tr = document.createElement('tr');
     const th = document.createElement('td');
     th.className = 'lesson-num';
     th.textContent = (r + 1) + ' урок';
     tr.appendChild(th);
+
     for (let d = 0; d < DAYS; d++) {
       const td = document.createElement('td');
       td.className = 'cell';
       td.contentEditable = 'true';
-      td.dataset.day = d;
       td.textContent = row[d] || '';
+      td.addEventListener('input', () => {
+        DATA[CURRENT_CLASS][CURRENT_GROUP].grid[r][d] = td.textContent.trim();
+      });
       tr.appendChild(td);
     }
     tbody.appendChild(tr);
   });
 }
 
-function addRow() {
-  const tbody = document.getElementById('tbody');
-  const r = tbody.querySelectorAll('tr').length;
-  const tr = document.createElement('tr');
-  const th = document.createElement('td');
-  th.className = 'lesson-num';
-  th.textContent = (r + 1) + ' урок';
-  tr.appendChild(th);
-  for (let d = 0; d < DAYS; d++) {
-    const td = document.createElement('td');
-    td.className = 'cell';
-    td.contentEditable = 'true';
-    td.dataset.day = d;
-    tr.appendChild(td);
-  }
-  tbody.appendChild(tr);
-}
-
 async function save() {
   const c = creds();
-  if (!c) return;
-
-  const grid = [];
-  document.querySelectorAll('#tbody tr').forEach(tr => {
-    const row = [];
-    tr.querySelectorAll('td.cell').forEach(td => row.push(td.textContent.trim()));
-    grid.push(row);
-  });
-
-  if (!DATA) {
-    showMsg('Сначала нажмите «Загрузить».', 'err');
-    return;
-  }
-
-  DATA.classes[CURRENT_CLASS][CURRENT_GROUP] = grid;
+  if (!c || !DATA) return;
 
   const body = {
-    message: 'Обновление ' + CURRENT_CLASS + ' гр.' + CURRENT_GROUP + ' ' + new Date().toISOString(),
+    message: 'Обновление расписания ' + new Date().toISOString(),
     content: btoa(unescape(encodeURIComponent(JSON.stringify(DATA, null, 2)))),
-    sha
+    sha: sha
   };
 
   try {
@@ -226,7 +191,7 @@ async function save() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
     sha = json.content.sha;
-    showMsg('Сохранено! Все увидят через 1–2 минуты.', 'ok');
+    showMsg('Сохранено! Подождите 1-2 минуты.', 'ok');
   } catch (e) {
     showMsg('Ошибка сохранения: ' + e.message, 'err');
   }
