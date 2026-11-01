@@ -5,6 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Админ — Расписание</title>
 <link rel="stylesheet" href="style.css">
+<script>
+(function () {
+  try {
+    var theme = localStorage.getItem('schedule_theme') || 'light';
+    var root = document.documentElement;
+    if (theme === 'dark') root.classList.add('dark');
+    root.classList.add('theme-init');
+    window.addEventListener('load', function () {
+      setTimeout(function () { root.classList.remove('theme-init'); }, 50);
+    });
+  } catch (e) {}
+})();
+</script>
 </head>
 <body>
 <div class="wrap">
@@ -55,183 +68,4 @@
 
 </div>
 
-<button class="theme-toggle" id="theme-toggle" type="button" aria-label="Переключить тему">
-  <span class="theme-icon">🌙</span>
-  <span class="theme-text">Ночная</span>
-</button>
-
-<script>
-const DAYS = 5;
-const LS_KEY = 'admin_creds_v3';
-const THEME_KEY = 'schedule_theme';
-let DATA = null;
-let CURRENT_CLASS = '10А';
-let CURRENT_GROUP = 'Группа 1';
-let sha = null;
-
-/* ===== ТЕМА ===== */
-function applyTheme(theme) {
-  const btn = document.getElementById('theme-toggle');
-  const icon = btn.querySelector('.theme-icon');
-  const text = btn.querySelector('.theme-text');
-  if (theme === 'dark') {
-    document.body.classList.add('dark');
-    icon.textContent = '☀️';
-    text.textContent = 'Дневная';
-  } else {
-    document.body.classList.remove('dark');
-    icon.textContent = '🌙';
-    text.textContent = 'Ночная';
-  }
-}
-
-function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY) || 'light';
-  applyTheme(saved);
-  document.getElementById('theme-toggle').addEventListener('click', () => {
-    const isDark = document.body.classList.contains('dark');
-    const next = isDark ? 'light' : 'dark';
-    localStorage.setItem(THEME_KEY, next);
-    applyTheme(next);
-  });
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-  initTheme();
-  const c = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
-  document.getElementById('owner').value = c.owner || '';
-  document.getElementById('repo').value  = c.repo  || 'school-schedule';
-  document.getElementById('token').value = c.token || '';
-});
-
-function creds() {
-  const owner = document.getElementById('owner').value.trim();
-  const repo  = document.getElementById('repo').value.trim();
-  const token = document.getElementById('token').value.trim();
-  if (!owner || !repo || !token) {
-    showMsg('Заполните все поля', 'err');
-    return null;
-  }
-  localStorage.setItem(LS_KEY, JSON.stringify({ owner, repo, token }));
-  return { owner, repo, token };
-}
-
-function apiUrl(c) {
-  return `https://api.github.com/repos/${c.owner}/${c.repo}/contents/data.json`;
-}
-
-function showMsg(text, type) {
-  const m = document.getElementById('msg');
-  m.textContent = text;
-  m.className = 'msg ' + type;
-  setTimeout(() => { m.className = 'msg'; }, 4000);
-}
-
-async function load() {
-  const c = creds();
-  if (!c) return;
-  try {
-    const res = await fetch(apiUrl(c) + '?t=' + Date.now(), {
-      headers: { 'Authorization': 'token ' + c.token, 'Accept': 'application/vnd.github+json' }
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    DATA = JSON.parse(decodeURIComponent(escape(atob(json.content.replace(/\n/g, '')))));
-    sha = json.sha;
-    renderButtons();
-    renderTable();
-    showMsg('Загружено из GitHub.', 'ok');
-  } catch (e) {
-    showMsg('Ошибка: ' + e.message, 'err');
-  }
-}
-
-function renderButtons() {
-  if(!DATA) return;
-  const classBtns = document.getElementById('class-btns');
-  const groupBtns = document.getElementById('group-btns');
-  classBtns.innerHTML = '';
-  groupBtns.innerHTML = '';
-
-  Object.keys(DATA).forEach(cls => {
-    const btn = document.createElement('button');
-    btn.className = 'ctrl-btn' + (cls === CURRENT_CLASS ? ' active' : '');
-    btn.textContent = cls;
-    btn.onclick = () => {
-      CURRENT_CLASS = cls;
-      renderButtons();
-      renderTable();
-    };
-    classBtns.appendChild(btn);
-  });
-
-  Object.keys(DATA[CURRENT_CLASS]).forEach(grp => {
-    const btn = document.createElement('button');
-    btn.className = 'ctrl-btn' + (grp === CURRENT_GROUP ? ' active' : '');
-    btn.textContent = grp;
-    btn.onclick = () => {
-      CURRENT_GROUP = grp;
-      renderButtons();
-      renderTable();
-    };
-    groupBtns.appendChild(btn);
-  });
-}
-
-function renderTable() {
-  const tbody = document.getElementById('tbody');
-  tbody.innerHTML = '';
-  const grid = DATA[CURRENT_CLASS][CURRENT_GROUP].grid;
-
-  grid.forEach((row, r) => {
-    const tr = document.createElement('tr');
-    const th = document.createElement('td');
-    th.className = 'lesson-num';
-    th.textContent = (r + 1) + ' урок';
-    tr.appendChild(th);
-
-    for (let d = 0; d < DAYS; d++) {
-      const td = document.createElement('td');
-      td.className = 'cell';
-      td.contentEditable = 'true';
-      td.textContent = row[d] || '';
-      td.addEventListener('input', () => {
-        DATA[CURRENT_CLASS][CURRENT_GROUP].grid[r][d] = td.textContent.trim();
-      });
-      tr.appendChild(td);
-    }
-    tbody.appendChild(tr);
-  });
-}
-
-async function save() {
-  const c = creds();
-  if (!c || !DATA) return;
-
-  const body = {
-    message: 'Обновление расписания ' + new Date().toISOString(),
-    content: btoa(unescape(encodeURIComponent(JSON.stringify(DATA, null, 2)))),
-    sha: sha
-  };
-
-  try {
-    const res = await fetch(apiUrl(c), {
-      method: 'PUT',
-      headers: {
-        'Authorization': 'token ' + c.token,
-        'Accept': 'application/vnd.github+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    sha = json.content.sha;
-    showMsg('Сохранено! Подождите 1-2 минуты.', 'ok');
-  } catch (e) {
-    showMsg('Ошибка сохранения: ' + e.message, 'err');
-  }
-}
-</script>
-</body>
-</html>
+<button class
