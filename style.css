@@ -1,5 +1,4 @@
-/* Подключаем шрифт, максимально похожий на системный шрифт Apple (SF Pro) */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 * { 
   box-sizing: border-box; 
@@ -8,12 +7,16 @@
 }
 
 body {
-  /* Фирменный цвет фона iOS (System Gray 6) */
-  background-color: #F2F2F7; 
-  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  color: #1C1C1E; /* Почти черный, глубокий цвет текста */
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+  /* Мягкий, премиальный фон с цветовыми пятнами */
+  background-color: #F5F5F7;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(167, 139, 250, 0.08) 0%, transparent 40%);
+  background-attachment: fixed;
+  color: #1D1D1F;
   min-height: 100vh;
-  padding: 24px 16px;
+  padding: 32px 16px;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -22,14 +25,22 @@ body {
   margin: 0 auto; 
 }
 
+/* --- Эффект матового стекла для всех карточек --- */
+header, .controls, .table-container, .admin-panel {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 28px; /* Сквиркл */
+  box-shadow: 
+    0 10px 40px -10px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9); /* Внутренний блик */
+}
+
 /* --- Шапка --- */
 header {
-  background: #FFFFFF;
   padding: 24px 32px;
-  border-radius: 24px; /* Большие скругления iOS */
   margin-bottom: 24px;
-  /* Очень мягкая, рассеянная тень, как у карточек в iOS */
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04); 
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -38,26 +49,23 @@ header {
 }
 
 header h1 { 
-  font-size: 24px; 
-  font-weight: 700; 
-  letter-spacing: -0.5px; /* Уплотняем буквы, как в Apple */
-  color: #000000; 
+  font-size: 26px; 
+  font-weight: 800; 
+  letter-spacing: -0.8px; 
+  color: #1D1D1F; 
 }
 
 header p { 
   font-size: 14px; 
-  color: #8E8E93; /* iOS System Gray */
+  color: #86868B; 
   margin-top: 6px; 
   font-weight: 500;
 }
 
 /* --- Панель управления (Класс/Группа) --- */
 .controls {
-  background: #FFFFFF;
-  padding: 20px 32px;
-  border-radius: 24px;
+  padding: 24px 32px;
   margin-bottom: 24px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -72,61 +80,59 @@ header p {
 
 .control-label {
   font-weight: 600;
-  color: #8E8E93;
+  color: #86868B;
   min-width: 70px;
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-/* Контейнер для кнопок, как iOS Segmented Control */
+/* Контейнер кнопок — как в iOS */
 .btn-group { 
   display: flex; 
-  gap: 6px; 
+  gap: 4px; 
   flex-wrap: wrap; 
-  background: #F2F2F7;
-  padding: 4px;
-  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 5px;
+  border-radius: 16px;
 }
 
-/* Кнопки выбора (Класс/Группа) */
 .ctrl-btn {
-  padding: 10px 20px;
+  padding: 10px 22px;
   background: transparent;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
   font-weight: 600;
   font-size: 14px;
-  color: #1C1C1E;
-  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  color: #1D1D1F;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   font-family: inherit;
 }
 
 .ctrl-btn:hover { 
-  background: rgba(0,0,0,0.04); 
+  background: rgba(0,0,0,0.03); 
 }
 
-/* Активная кнопка — белая плашка с тенью */
+/* Активная кнопка */
 .ctrl-btn.active {
   background: #FFFFFF;
   color: #000000;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 
+    0 3px 8px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(0,0,0,0.02);
 }
 
 /* --- Таблица --- */
 .table-container {
-  background: #FFFFFF;
-  border-radius: 24px;
-  padding: 16px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  padding: 20px;
   overflow-x: auto;
 }
 
 table {
   width: 100%;
   border-collapse: separate;
-  border-spacing: 8px; /* Отступы между клетками */
+  border-spacing: 8px;
   min-width: 600px;
 }
 
@@ -135,138 +141,128 @@ th, td {
   padding: 16px 12px;
   text-align: center;
   font-size: 14px;
-  border-radius: 14px;
+  border-radius: 16px;
   font-weight: 500;
 }
 
-/* Заголовки дней недели — пастельные, благородные тона */
+/* ЕДИНЫЙ ПРИЯТНЫЙ ЦВЕТ для заголовков дней недели */
 th.day-header {
+  background: #6366F1; /* Красивый благородный Индиго */
   color: #FFFFFF;
   font-weight: 600;
   font-size: 14px;
-  padding: 14px 10px;
+  padding: 16px 10px;
   letter-spacing: 0.3px;
+  border-bottom: 2px solid rgba(0,0,0,0.1); /* Легкая тень снизу */
 }
-
-/* Цвета дней (iOS Pastel Palette) */
-th.day-header[data-day="0"] { background: #FF3B30; } /* Красный */
-th.day-header[data-day="1"] { background: #FF9500; } /* Оранжевый */
-th.day-header[data-day="2"] { background: #34C759; } /* Зеленый */
-th.day-header[data-day="3"] { background: #007AFF; } /* Синий */
-th.day-header[data-day="4"] { background: #AF52DE; } /* Фиолетовый */
 
 /* Номера уроков */
 th.lesson-num {
-  background: #E5E5EA; /* Светло-серый iOS */
-  color: #1C1C1E;
-  font-weight: 600;
+  background: rgba(0, 0, 0, 0.03);
+  color: #86868B;
+  font-weight: 700;
   width: 90px;
   font-size: 13px;
 }
 
 /* Клетки с предметами */
 td {
-  background: #F2F2F7; /* Очень светлый фон клеток */
+  background: #FFFFFF;
   height: 60px;
-  color: #1C1C1E;
+  color: #1D1D1F;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
   transition: all 0.2s ease;
-  font-weight: 500;
 }
 
 td:hover { 
-  background: #E5E5EA; 
-  transform: translateY(-1px);
+  background: #F9F9FB;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
 }
 
 td:empty::before { 
   content: "—"; 
-  color: #C7C7CC; 
+  color: #D2D2D7; 
 }
 
 /* --- Стили для админки --- */
-td.cell[contenteditable="true"] { 
-  cursor: text; 
-  outline: none; 
-}
+td.cell[contenteditable="true"] { cursor: text; outline: none; }
 
-/* Синий контур при редактировании, как в iOS */
 td.cell[contenteditable="true"]:focus {
   background: #FFFFFF;
-  box-shadow: 0 0 0 3px #007AFF; 
+  box-shadow: 0 0 0 3px #6366F1, 0 6px 16px rgba(99, 102, 241, 0.2);
+  transform: translateY(-2px);
 }
 
 .admin-panel {
-  background: #FFFFFF;
   padding: 20px;
-  border-radius: 20px;
   margin-bottom: 24px;
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
   align-items: center;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
 }
 
 .admin-panel input {
-  padding: 12px 16px;
-  border: 1px solid #E5E5EA;
-  border-radius: 12px;
+  padding: 14px 18px;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 14px;
   font-size: 14px;
   font-family: inherit;
   font-weight: 500;
   outline: none;
-  transition: border 0.2s, box-shadow 0.2s;
-  background: #F2F2F7;
+  background: #FFFFFF;
+  transition: all 0.2s;
 }
 
 .admin-panel input:focus { 
-  border-color: #007AFF; 
-  background: #FFFFFF;
-  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+  border-color: #6366F1; 
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
 }
 
 /* Кнопки */
 .btn {
-  padding: 12px 24px;
+  padding: 14px 28px;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
   font-weight: 600;
   font-size: 14px;
   color: #FFFFFF;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
   font-family: inherit;
-  letter-spacing: 0.3px;
 }
 
 .btn:hover { 
-  opacity: 0.85; 
-  transform: scale(0.98); 
+  opacity: 0.9; 
+  transform: scale(0.97); 
 }
 
-.btn-save { background: #34C759; } /* iOS Green */
-.btn-load { background: #007AFF; } /* iOS Blue */
-.btn-add { background: #FF9500; }  /* iOS Orange */
+.btn-save { background: #34C759; }
+.btn-load { background: #007AFF; }
+.btn-add { background: #FF9500; }
 
 .msg { 
-  padding: 14px; 
-  border-radius: 12px; 
-  margin-bottom: 16px; 
+  padding: 16px; 
+  border-radius: 14px; 
+  margin-bottom: 20px; 
   display: none; 
   font-weight: 600; 
   font-size: 14px; 
   text-align: center; 
+  backdrop-filter: blur(10px);
 }
 
-.msg.ok { background: #E8F8EE; color: #1C7B3B; display: block; }
-.msg.err { background: #FDE8E8; color: #C42323; display: block; }
+.msg.ok { background: rgba(52, 199, 89, 0.15); color: #1C7B3B; display: block; border: 1px solid rgba(52, 199, 89, 0.3); }
+.msg.err { background: rgba(255, 59, 48, 0.15); color: #C42323; display: block; border: 1px solid rgba(255, 59, 48, 0.3); }
 
-/* Адаптив для телефонов */
+/* Адаптив */
 @media (max-width: 700px) {
-  body { padding: 12px; }
+  body { padding: 16px 12px; }
+  header, .controls, .table-container, .admin-panel { border-radius: 20px; }
   header { padding: 20px; }
-  .controls { padding: 16px 20px; }
-  th, td { font-size: 12px; padding: 10px 6px; height: 50px; }
+  .controls { padding: 20px; }
+  th, td { font-size: 12px; padding: 10px 6px; height: 50px; border-radius: 12px; }
   th.lesson-num { width: 60px; font-size: 11px; }
   .ctrl-btn { padding: 8px 14px; font-size: 13px; }
   .admin-panel input { width: 100%; }
