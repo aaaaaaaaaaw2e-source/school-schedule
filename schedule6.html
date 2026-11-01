@@ -1,1 +1,153 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Расписание 6 классов</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
 
+  <header>
+    <div>
+      <h1>📅 Расписание 6 классов</h1>
+      <p>Расписание пока не заполнено — скоро появится.</p>
+    </div>
+    <a class="back-link" href="index.html">← Все классы</a>
+  </header>
+
+  <div class="controls">
+    <div class="control-row">
+      <span class="control-label">Класс:</span>
+      <div class="btn-group" id="class-btns"></div>
+    </div>
+    <div class="control-row">
+      <span class="control-label">Группа:</span>
+      <div class="btn-group" id="group-btns"></div>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th class="lesson-num">Урок</th>
+          <th class="day-header" data-day="0">Понедельник</th>
+          <th class="day-header" data-day="1">Вторник</th>
+          <th class="day-header" data-day="2">Среда</th>
+          <th class="day-header" data-day="3">Четверг</th>
+          <th class="day-header" data-day="4">Пятница</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty-hint">📭 Расписание для 6 класса пока не заполнено</div>
+  </div>
+
+</div>
+
+<button class="theme-toggle" id="theme-toggle" type="button" aria-label="Переключить тему">
+  <span class="theme-icon">🌙</span>
+  <span class="theme-text">Ночная</span>
+</button>
+
+<script>
+const DAYS = 5;
+const LESSONS = 8;
+
+const CLASSES = ['А', 'Б', 'В', 'Г'];
+const GROUPS  = ['Группа 1', 'Группа 2'];
+
+let CURRENT_CLASS = 'А';
+let CURRENT_GROUP = 'Группа 1';
+
+/* ===== ТЕМА ===== */
+const THEME_KEY = 'schedule_theme';
+
+function applyTheme(theme) {
+  const btn = document.getElementById('theme-toggle');
+  const icon = btn.querySelector('.theme-icon');
+  const text = btn.querySelector('.theme-text');
+  if (theme === 'dark') {
+    document.body.classList.add('dark');
+    icon.textContent = '☀️';
+    text.textContent = 'Дневная';
+  } else {
+    document.body.classList.remove('dark');
+    icon.textContent = '🌙';
+    text.textContent = 'Ночная';
+  }
+}
+
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY) || 'light';
+  applyTheme(saved);
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const isDark = document.body.classList.contains('dark');
+    const next = isDark ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, next);
+    applyTheme(next);
+  });
+}
+
+/* ===== КНОПКИ ===== */
+function renderButtons() {
+  const classBtns = document.getElementById('class-btns');
+  const groupBtns = document.getElementById('group-btns');
+  classBtns.innerHTML = '';
+  groupBtns.innerHTML = '';
+
+  CLASSES.forEach(cls => {
+    const btn = document.createElement('button');
+    btn.className = 'ctrl-btn' + (cls === CURRENT_CLASS ? ' active' : '');
+    btn.textContent = cls;
+    btn.onclick = () => {
+      CURRENT_CLASS = cls;
+      renderButtons();
+      renderTable();
+    };
+    classBtns.appendChild(btn);
+  });
+
+  GROUPS.forEach(grp => {
+    const btn = document.createElement('button');
+    btn.className = 'ctrl-btn' + (grp === CURRENT_GROUP ? ' active' : '');
+    btn.textContent = grp;
+    btn.onclick = () => {
+      CURRENT_GROUP = grp;
+      renderButtons();
+      renderTable();
+    };
+    groupBtns.appendChild(btn);
+  });
+}
+
+/* ===== ПУСТАЯ ТАБЛИЦА ===== */
+function renderTable() {
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+
+  for (let r = 0; r < LESSONS; r++) {
+    const tr = document.createElement('tr');
+    const th = document.createElement('td');
+    th.className = 'lesson-num';
+    th.textContent = (r + 1) + ' урок';
+    tr.appendChild(th);
+
+    for (let d = 0; d < DAYS; d++) {
+      const td = document.createElement('td');
+      td.className = 'cell';
+      td.textContent = '';
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+}
+
+initTheme();
+renderButtons();
+renderTable();
+</script>
+</body>
+</html>
