@@ -37,31 +37,67 @@
     </div>
   </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th class="lesson-num">Урок</th>
-        <th class="day-header" data-day="0">Понедельник</th>
-        <th class="day-header" data-day="1">Вторник</th>
-        <th class="day-header" data-day="2">Среда</th>
-        <th class="day-header" data-day="3">Четверг</th>
-        <th class="day-header" data-day="4">Пятница</th>
-      </tr>
-    </thead>
-    <tbody id="tbody"></tbody>
-  </table>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th class="lesson-num">Урок</th>
+          <th class="day-header" data-day="0">Понедельник</th>
+          <th class="day-header" data-day="1">Вторник</th>
+          <th class="day-header" data-day="2">Среда</th>
+          <th class="day-header" data-day="3">Четверг</th>
+          <th class="day-header" data-day="4">Пятница</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
 
 </div>
+
+<button class="theme-toggle" id="theme-toggle" type="button" aria-label="Переключить тему">
+  <span class="theme-icon">🌙</span>
+  <span class="theme-text">Ночная</span>
+</button>
 
 <script>
 const DAYS = 5;
 const LS_KEY = 'admin_creds_v3';
+const THEME_KEY = 'schedule_theme';
 let DATA = null;
 let CURRENT_CLASS = '10А';
 let CURRENT_GROUP = 'Группа 1';
 let sha = null;
 
+/* ===== ТЕМА ===== */
+function applyTheme(theme) {
+  const btn = document.getElementById('theme-toggle');
+  const icon = btn.querySelector('.theme-icon');
+  const text = btn.querySelector('.theme-text');
+  if (theme === 'dark') {
+    document.body.classList.add('dark');
+    icon.textContent = '☀️';
+    text.textContent = 'Дневная';
+  } else {
+    document.body.classList.remove('dark');
+    icon.textContent = '🌙';
+    text.textContent = 'Ночная';
+  }
+}
+
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY) || 'light';
+  applyTheme(saved);
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const isDark = document.body.classList.contains('dark');
+    const next = isDark ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, next);
+    applyTheme(next);
+  });
+}
+
 window.addEventListener('DOMContentLoaded', () => {
+  initTheme();
   const c = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
   document.getElementById('owner').value = c.owner || '';
   document.getElementById('repo').value  = c.repo  || 'school-schedule';
