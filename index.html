@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Расписание 10 классов</title>
+<title>Расписание — выбор класса</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,36 +11,59 @@
 
   <header>
     <div>
-      <h1>📅 Расписание 10 классов</h1>
-      <p>Выберите класс и группу для просмотра.</p>
+      <h1>📅 Расписание классов</h1>
+      <p>Выберите класс, чтобы посмотреть расписание.</p>
     </div>
   </header>
 
-  <div class="controls">
-    <div class="control-row">
-      <span class="control-label">Класс:</span>
-      <div class="btn-group" id="class-btns"></div>
-    </div>
-    <div class="control-row">
-      <span class="control-label">Группа:</span>
-      <div class="btn-group" id="group-btns"></div>
-    </div>
-  </div>
+  <div class="classes-panel">
+    <div class="classes-title">Доступные классы</div>
+    <div class="classes-subtitle">Пока доступен только 10 класс. Остальные — скоро.</div>
 
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th class="lesson-num">Урок</th>
-          <th class="day-header" data-day="0">Понедельник</th>
-          <th class="day-header" data-day="1">Вторник</th>
-          <th class="day-header" data-day="2">Среда</th>
-          <th class="day-header" data-day="3">Четверг</th>
-          <th class="day-header" data-day="4">Пятница</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
+    <div class="classes-grid">
+      <!-- 5–9 и 11 классы: заблокированы -->
+      <button class="class-card disabled" type="button" disabled title="Расписание скоро появится">
+        <span class="class-num">5</span>
+        <span class="class-label">Класс</span>
+        <span class="class-card-soon">🔒 Скоро</span>
+      </button>
+
+      <button class="class-card disabled" type="button" disabled title="Расписание скоро появится">
+        <span class="class-num">6</span>
+        <span class="class-label">Класс</span>
+        <span class="class-card-soon">🔒 Скоро</span>
+      </button>
+
+      <button class="class-card disabled" type="button" disabled title="Расписание скоро появится">
+        <span class="class-num">7</span>
+        <span class="class-label">Класс</span>
+        <span class="class-card-soon">🔒 Скоро</span>
+      </button>
+
+      <button class="class-card disabled" type="button" disabled title="Расписание скоро появится">
+        <span class="class-num">8</span>
+        <span class="class-label">Класс</span>
+        <span class="class-card-soon">🔒 Скоро</span>
+      </button>
+
+      <button class="class-card disabled" type="button" disabled title="Расписание скоро появится">
+        <span class="class-num">9</span>
+        <span class="class-label">Класс</span>
+        <span class="class-card-soon">🔒 Скоро</span>
+      </button>
+
+      <!-- 10 класс: доступен -->
+      <a class="class-card available" href="schedule10.html" style="text-decoration:none;">
+        <span class="class-num">10</span>
+        <span class="class-label">Класс</span>
+      </a>
+
+      <button class="class-card disabled" type="button" disabled title="Расписание скоро появится">
+        <span class="class-num">11</span>
+        <span class="class-label">Класс</span>
+        <span class="class-card-soon">🔒 Скоро</span>
+      </button>
+    </div>
   </div>
 
 </div>
@@ -51,12 +74,6 @@
 </button>
 
 <script>
-const DAYS = 5;
-let DATA = null;
-let CURRENT_CLASS = '10А';
-let CURRENT_GROUP = 'Группа 1';
-
-/* ===== ТЕМА ===== */
 const THEME_KEY = 'schedule_theme';
 
 function applyTheme(theme) {
@@ -85,73 +102,7 @@ function initTheme() {
   });
 }
 
-/* ===== ДАННЫЕ ===== */
-async function load() {
-  try {
-    const res = await fetch('data.json?t=' + Date.now());
-    DATA = await res.json();
-    renderButtons();
-    renderTable();
-  } catch (e) {
-    alert('Ошибка загрузки данных: ' + e.message);
-  }
-}
-
-function renderButtons() {
-  const classBtns = document.getElementById('class-btns');
-  const groupBtns = document.getElementById('group-btns');
-  classBtns.innerHTML = '';
-  groupBtns.innerHTML = '';
-
-  Object.keys(DATA).forEach(cls => {
-    const btn = document.createElement('button');
-    btn.className = 'ctrl-btn' + (cls === CURRENT_CLASS ? ' active' : '');
-    btn.textContent = cls;
-    btn.onclick = () => {
-      CURRENT_CLASS = cls;
-      renderButtons();
-      renderTable();
-    };
-    classBtns.appendChild(btn);
-  });
-
-  Object.keys(DATA[CURRENT_CLASS]).forEach(grp => {
-    const btn = document.createElement('button');
-    btn.className = 'ctrl-btn' + (grp === CURRENT_GROUP ? ' active' : '');
-    btn.textContent = grp;
-    btn.onclick = () => {
-      CURRENT_GROUP = grp;
-      renderButtons();
-      renderTable();
-    };
-    groupBtns.appendChild(btn);
-  });
-}
-
-function renderTable() {
-  const tbody = document.getElementById('tbody');
-  tbody.innerHTML = '';
-  const grid = DATA[CURRENT_CLASS][CURRENT_GROUP].grid;
-
-  grid.forEach((row, r) => {
-    const tr = document.createElement('tr');
-    const th = document.createElement('td');
-    th.className = 'lesson-num';
-    th.textContent = (r + 1) + ' урок';
-    tr.appendChild(th);
-
-    for (let d = 0; d < DAYS; d++) {
-      const td = document.createElement('td');
-      td.className = 'cell';
-      td.textContent = row[d] || '';
-      tr.appendChild(td);
-    }
-    tbody.appendChild(tr);
-  });
-}
-
 initTheme();
-load();
 </script>
 </body>
 </html>
