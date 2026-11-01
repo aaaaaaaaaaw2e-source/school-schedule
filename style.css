@@ -8,13 +8,13 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
-  /* Мягкий, премиальный фон с цветовыми пятнами */
-  background-color: #F5F5F7;
+  background-color: #1C1C1E;
   background-image: 
-    radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(167, 139, 250, 0.08) 0%, transparent 40%);
+    radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 90% 80%, rgba(124, 58, 237, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(30, 41, 59, 0.4) 0%, transparent 70%);
   background-attachment: fixed;
-  color: #1D1D1F;
+  color: #F5F5F7;
   min-height: 100vh;
   padding: 32px 16px;
   -webkit-font-smoothing: antialiased;
@@ -25,19 +25,17 @@ body {
   margin: 0 auto; 
 }
 
-/* --- Эффект матового стекла для всех карточек --- */
 header, .controls, .table-container, .admin-panel {
-  background: rgba(255, 255, 255, 0.65);
+  background: rgba(44, 44, 46, 0.65);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 28px; /* Сквиркл */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
   box-shadow: 
-    0 10px 40px -10px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9); /* Внутренний блик */
+    0 10px 40px -10px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-/* --- Шапка --- */
 header {
   padding: 24px 32px;
   margin-bottom: 24px;
@@ -52,17 +50,16 @@ header h1 {
   font-size: 26px; 
   font-weight: 800; 
   letter-spacing: -0.8px; 
-  color: #1D1D1F; 
+  color: #FFFFFF; 
 }
 
 header p { 
   font-size: 14px; 
-  color: #86868B; 
+  color: #98989D; 
   margin-top: 6px; 
   font-weight: 500;
 }
 
-/* --- Панель управления (Класс/Группа) --- */
 .controls {
   padding: 24px 32px;
   margin-bottom: 24px;
@@ -80,19 +77,18 @@ header p {
 
 .control-label {
   font-weight: 600;
-  color: #86868B;
+  color: #98989D;
   min-width: 70px;
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-/* Контейнер кнопок — как в iOS */
 .btn-group { 
   display: flex; 
   gap: 4px; 
   flex-wrap: wrap; 
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(0, 0, 0, 0.3);
   padding: 5px;
   border-radius: 16px;
 }
@@ -105,25 +101,23 @@ header p {
   cursor: pointer;
   font-weight: 600;
   font-size: 14px;
-  color: #1D1D1F;
+  color: #D1D1D6;
   transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   font-family: inherit;
 }
 
 .ctrl-btn:hover { 
-  background: rgba(0,0,0,0.03); 
+  background: rgba(255, 255, 255, 0.06); 
 }
 
-/* Активная кнопка */
 .ctrl-btn.active {
-  background: #FFFFFF;
-  color: #000000;
+  background: #3A3A3C;
+  color: #FFFFFF;
   box-shadow: 
-    0 3px 8px rgba(0, 0, 0, 0.06),
-    0 0 0 1px rgba(0,0,0,0.02);
+    0 3px 8px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
-/* --- Таблица --- */
 .table-container {
   padding: 20px;
   overflow-x: auto;
@@ -145,52 +139,49 @@ th, td {
   font-weight: 500;
 }
 
-/* ЕДИНЫЙ ПРИЯТНЫЙ ЦВЕТ для заголовков дней недели */
 th.day-header {
-  background: #6366F1; /* Красивый благородный Индиго */
+  background: linear-gradient(180deg, #4F46E5 0%, #4338CA 100%);
   color: #FFFFFF;
   font-weight: 600;
   font-size: 14px;
   padding: 16px 10px;
   letter-spacing: 0.3px;
-  border-bottom: 2px solid rgba(0,0,0,0.1); /* Легкая тень снизу */
+  border-bottom: 2px solid rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 8px rgba(67, 56, 202, 0.4);
 }
 
-/* Номера уроков */
 th.lesson-num {
-  background: rgba(0, 0, 0, 0.03);
-  color: #86868B;
+  background: rgba(255, 255, 255, 0.04);
+  color: #98989D;
   font-weight: 700;
   width: 90px;
   font-size: 13px;
 }
 
-/* Клетки с предметами */
 td {
-  background: #FFFFFF;
+  background: #2C2C2E;
   height: 60px;
-  color: #1D1D1F;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  color: #F5F5F7;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   transition: all 0.2s ease;
 }
 
 td:hover { 
-  background: #F9F9FB;
+  background: #3A3A3C;
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 td:empty::before { 
   content: "—"; 
-  color: #D2D2D7; 
+  color: #555558; 
 }
 
-/* --- Стили для админки --- */
 td.cell[contenteditable="true"] { cursor: text; outline: none; }
 
 td.cell[contenteditable="true"]:focus {
-  background: #FFFFFF;
-  box-shadow: 0 0 0 3px #6366F1, 0 6px 16px rgba(99, 102, 241, 0.2);
+  background: #3A3A3C;
+  box-shadow: 0 0 0 3px #6366F1, 0 6px 16px rgba(99, 102, 241, 0.4);
   transform: translateY(-2px);
 }
 
@@ -205,22 +196,27 @@ td.cell[contenteditable="true"]:focus {
 
 .admin-panel input {
   padding: 14px 18px;
-  border: 1px solid rgba(0,0,0,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 14px;
   font-size: 14px;
   font-family: inherit;
   font-weight: 500;
   outline: none;
-  background: #FFFFFF;
+  background: #1C1C1E;
+  color: #F5F5F7;
   transition: all 0.2s;
+}
+
+.admin-panel input::placeholder {
+  color: #6E6E73;
 }
 
 .admin-panel input:focus { 
   border-color: #6366F1; 
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25);
+  background: #2C2C2E;
 }
 
-/* Кнопки */
 .btn {
   padding: 14px 28px;
   border: none;
@@ -238,9 +234,9 @@ td.cell[contenteditable="true"]:focus {
   transform: scale(0.97); 
 }
 
-.btn-save { background: #34C759; }
-.btn-load { background: #007AFF; }
-.btn-add { background: #FF9500; }
+.btn-save { background: #30A14E; }
+.btn-load { background: #0A84FF; }
+.btn-add { background: #D97706; }
 
 .msg { 
   padding: 16px; 
@@ -253,10 +249,9 @@ td.cell[contenteditable="true"]:focus {
   backdrop-filter: blur(10px);
 }
 
-.msg.ok { background: rgba(52, 199, 89, 0.15); color: #1C7B3B; display: block; border: 1px solid rgba(52, 199, 89, 0.3); }
-.msg.err { background: rgba(255, 59, 48, 0.15); color: #C42323; display: block; border: 1px solid rgba(255, 59, 48, 0.3); }
+.msg.ok { background: rgba(48, 161, 78, 0.2); color: #6EE7A0; display: block; border: 1px solid rgba(48, 161, 78, 0.4); }
+.msg.err { background: rgba(255, 69, 58, 0.2); color: #FF8A80; display: block; border: 1px solid rgba(255, 69, 58, 0.4); }
 
-/* Адаптив */
 @media (max-width: 700px) {
   body { padding: 16px 12px; }
   header, .controls, .table-container, .admin-panel { border-radius: 20px; }
