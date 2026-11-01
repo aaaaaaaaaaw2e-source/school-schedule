@@ -5,6 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Расписание 10 классов</title>
 <link rel="stylesheet" href="style.css">
+<script>
+(function () {
+  try {
+    var theme = localStorage.getItem('schedule_theme') || 'light';
+    var root = document.documentElement;
+    if (theme === 'dark') root.classList.add('dark');
+    root.classList.add('theme-init');
+    window.addEventListener('load', function () {
+      setTimeout(function () { root.classList.remove('theme-init'); }, 50);
+    });
+  } catch (e) {}
+})();
+</script>
 </head>
 <body>
 <div class="wrap">
@@ -53,23 +66,22 @@
 
 <script>
 const DAYS = 5;
+const THEME_KEY = 'schedule_theme';
 let DATA = null;
 let CURRENT_CLASS = '10А';
 let CURRENT_GROUP = 'Группа 1';
-
-/* ===== ТЕМА ===== */
-const THEME_KEY = 'schedule_theme';
 
 function applyTheme(theme) {
   const btn = document.getElementById('theme-toggle');
   const icon = btn.querySelector('.theme-icon');
   const text = btn.querySelector('.theme-text');
+  const root = document.documentElement;
   if (theme === 'dark') {
-    document.body.classList.add('dark');
+    root.classList.add('dark');
     icon.textContent = '☀️';
     text.textContent = 'Дневная';
   } else {
-    document.body.classList.remove('dark');
+    root.classList.remove('dark');
     icon.textContent = '🌙';
     text.textContent = 'Ночная';
   }
@@ -79,14 +91,13 @@ function initTheme() {
   const saved = localStorage.getItem(THEME_KEY) || 'light';
   applyTheme(saved);
   document.getElementById('theme-toggle').addEventListener('click', () => {
-    const isDark = document.body.classList.contains('dark');
+    const isDark = document.documentElement.classList.contains('dark');
     const next = isDark ? 'light' : 'dark';
     localStorage.setItem(THEME_KEY, next);
     applyTheme(next);
   });
 }
 
-/* ===== ДАННЫЕ ===== */
 async function load() {
   try {
     const res = await fetch('data.json?t=' + Date.now());
