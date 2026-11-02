@@ -74,7 +74,7 @@ html.dark .main-panel {
   margin-bottom: 20px;
 }
 
-/* Внутри общей панели — без своих фонов */
+/* Внутри общей панели — НИЧЕГО своего (ни фона, ни рамки, ни тени, ни отступов) */
 .main-panel header,
 .main-panel .classes-panel {
   background: transparent;
