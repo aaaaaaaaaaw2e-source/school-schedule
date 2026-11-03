@@ -41,7 +41,7 @@ html.dark body {
 
 .wrap { max-width: 1000px; margin: 0 auto; }
 
-header, .controls, .table-container, .admin-panel, .classes-panel {
+header, .controls, .table-container, .admin-panel, .main-panel {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
@@ -58,7 +58,7 @@ html.dark header,
 html.dark .controls, 
 html.dark .table-container, 
 html.dark .admin-panel,
-html.dark .classes-panel {
+html.dark .main-panel {
   background: rgba(44, 44, 46, 0.65);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 
@@ -66,7 +66,6 @@ html.dark .classes-panel {
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-/* ===== УМЕНЬШЕНА ВЫСОТА ШАПКИ ===== */
 header {
   padding: 16px 24px;
   margin-bottom: 16px;
@@ -311,26 +310,39 @@ html.dark .btn-add { background: #D97706; }
 html.dark .msg.ok { background: rgba(48, 161, 78, 0.2); color: #6EE7A0; border: 1px solid rgba(48, 161, 78, 0.4); }
 html.dark .msg.err { background: rgba(255, 69, 58, 0.2); color: #FF8A80; border: 1px solid rgba(255, 69, 58, 0.4); }
 
-/* ===== ПАНЕЛЬ КЛАССОВ: КОМПАКТНЕЕ ===== */
-.classes-panel { padding: 20px; }
+/* ================= ГЛАВНОЕ ОКНО (классы + расписание) ================= */
+.main-panel {
+  padding: 24px;
+  min-height: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
 
-.classes-title { font-size: 18px; font-weight: 700; color: #1D1D1F; margin-bottom: 6px; letter-spacing: -0.3px; }
-html.dark .classes-title { color: #FFFFFF; }
+/* Две колонки с карточками классов */
+.classes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
 
-.classes-subtitle { font-size: 14px; color: #6E6E73; margin-bottom: 24px; font-weight: 500; }
-html.dark .classes-subtitle { color: #98989D; }
+.classes-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 
-.classes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
-
+/* Карточка класса */
 .class-card {
   position: relative;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 18px 14px;
-  border-radius: 20px;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px 20px;
+  border-radius: 18px;
   border: 1px solid rgba(99, 102, 241, 0.15);
   background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248, 249, 255, 0.95) 100%);
   color: #1D1D1F;
@@ -339,7 +351,7 @@ html.dark .classes-subtitle { color: #98989D; }
   cursor: pointer;
   box-shadow: 0 6px 20px -8px rgba(99, 102, 241, 0.2), inset 0 1px 0 rgba(255, 255, 255, 1);
   transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
-  text-align: center;
+  text-align: left;
 }
 
 .class-card .class-num {
@@ -414,6 +426,44 @@ html.dark .class-card.disabled { background: rgba(44, 44, 46, 0.4); border-color
 html.dark .class-card.disabled .class-num { color: #555558; }
 html.dark .class-card-soon { background: rgba(99, 102, 241, 0.2); color: #A5B4FC; }
 
+/* Блок расписания внутри главного окна */
+.schedule-area {
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(99, 102, 241, 0.05);
+  border: 1px solid rgba(99, 102, 241, 0.1);
+  overflow-x: auto;
+}
+
+html.dark .schedule-area {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 6px;
+  min-width: 500px;
+}
+
+.preview-table th,
+.preview-table td {
+  padding: 12px 8px;
+  font-size: 13px;
+}
+
+.preview-table td {
+  height: 44px;
+}
+
+.preview-table th.lesson-num,
+.preview-table td.lesson-num {
+  width: 50px;
+  font-size: 12px;
+}
+
+/* Ссылка «назад» (для внутренних страниц) */
 .back-link {
   display: inline-flex;
   align-items: center;
@@ -489,15 +539,14 @@ html.dark .theme-toggle:hover { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65); }
 
 @media (max-width: 700px) {
   body { padding: 12px 10px; }
-  header, .controls, .table-container, .admin-panel, .classes-panel { border-radius: 20px; }
+  header, .controls, .table-container, .admin-panel, .main-panel { border-radius: 20px; }
   header { padding: 14px 18px; margin-bottom: 12px; }
   header h1 { font-size: 20px; }
   .controls { padding: 20px; }
-  .classes-panel { padding: 16px; }
-  .classes-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
-  .class-card { padding: 14px 10px; border-radius: 16px; }
+  .main-panel { padding: 16px; min-height: auto; gap: 16px; }
+  .classes-grid { grid-template-columns: 1fr; gap: 10px; }
+  .class-card { padding: 14px 16px; }
   .class-card .class-num { font-size: 22px; }
-  .class-card .class-label { font-size: 11px; }
   th, td { font-size: 12px; padding: 10px 6px; height: 50px; border-radius: 12px; }
   th.lesson-num { width: 60px; font-size: 11px; }
   .ctrl-btn { padding: 8px 14px; font-size: 13px; }
