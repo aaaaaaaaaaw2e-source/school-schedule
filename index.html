@@ -5,62 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Расписание — выбор класса</title>
 <link rel="stylesheet" href="style.css">
-<script>
-(function () {
-  try {
-    var theme = localStorage.getItem('schedule_theme') || 'light';
-    var root = document.documentElement;
-    if (theme === 'dark') root.classList.add('dark');
-    root.classList.add('theme-init');
-    window.addEventListener('load', function () {
-      setTimeout(function () { root.classList.remove('theme-init'); }, 50);
-    });
-  } catch (e) {}
-})();
-</script>
 </head>
 <body>
 <div class="wrap">
-
   <header>
     <div>
-      <h1>📅 Расписание классов</h1>
+      <h1>📚 Расписание</h1>
+      <p>Выберите класс, чтобы посмотреть расписание.</p>
     </div>
   </header>
 
   <div class="classes-panel">
+    <div class="classes-title">Классы</div>
+    <div class="classes-subtitle">Доступен пока только 10 класс.</div>
     <div class="classes-grid">
-      <a class="class-card available" href="schedule5.html" style="text-decoration:none;">
-        <span class="class-num">5</span>
-        <span class="class-label">Класс</span>
-      </a>
-      <a class="class-card available" href="schedule6.html" style="text-decoration:none;">
-        <span class="class-num">6</span>
-        <span class="class-label">Класс</span>
-      </a>
-      <a class="class-card available" href="schedule7.html" style="text-decoration:none;">
-        <span class="class-num">7</span>
-        <span class="class-label">Класс</span>
-      </a>
-      <a class="class-card available" href="schedule8.html" style="text-decoration:none;">
-        <span class="class-num">8</span>
-        <span class="class-label">Класс</span>
-      </a>
-      <a class="class-card available" href="schedule9.html" style="text-decoration:none;">
-        <span class="class-num">9</span>
-        <span class="class-label">Класс</span>
-      </a>
-      <a class="class-card available" href="schedule10.html" style="text-decoration:none;">
-        <span class="class-num">10</span>
-        <span class="class-label">Класс</span>
-      </a>
-      <a class="class-card available" href="schedule11.html" style="text-decoration:none;">
-        <span class="class-num">11</span>
-        <span class="class-label">Класс</span>
-      </a>
+      <div class="class-card disabled"><span class="class-num">5</span><span class="class-label">Класс</span><span class="class-card-soon">🔒 Скоро</span></div>
+      <div class="class-card disabled"><span class="class-num">6</span><span class="class-label">Класс</span><span class="class-card-soon">🔒 Скоро</span></div>
+      <div class="class-card disabled"><span class="class-num">7</span><span class="class-label">Класс</span><span class="class-card-soon">🔒 Скоро</span></div>
+      <div class="class-card disabled"><span class="class-num">8</span><span class="class-label">Класс</span><span class="class-card-soon">🔒 Скоро</span></div>
+      <div class="class-card disabled"><span class="class-num">9</span><span class="class-label">Класс</span><span class="class-card-soon">🔒 Скоро</span></div>
+      <a class="class-card available" href="schedule10.html"><span class="class-num">10</span><span class="class-label">Класс</span></a>
+      <div class="class-card disabled"><span class="class-num">11</span><span class="class-label">Класс</span><span class="class-card-soon">🔒 Скоро</span></div>
     </div>
   </div>
-
 </div>
 
 <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Переключить тему">
@@ -70,34 +37,28 @@
 
 <script>
 const THEME_KEY = 'schedule_theme';
-
 function applyTheme(theme) {
   const btn = document.getElementById('theme-toggle');
   const icon = btn.querySelector('.theme-icon');
   const text = btn.querySelector('.theme-text');
-  const root = document.documentElement;
   if (theme === 'dark') {
-    root.classList.add('dark');
-    icon.textContent = '☀️';
-    text.textContent = 'Дневная';
+    document.body.classList.add('dark');
+    icon.textContent = '☀️'; text.textContent = 'Дневная';
   } else {
-    root.classList.remove('dark');
-    icon.textContent = '🌙';
-    text.textContent = 'Ночная';
+    document.body.classList.remove('dark');
+    icon.textContent = '🌙'; text.textContent = 'Ночная';
   }
 }
-
 function initTheme() {
   const saved = localStorage.getItem(THEME_KEY) || 'light';
   applyTheme(saved);
   document.getElementById('theme-toggle').addEventListener('click', () => {
-    const isDark = document.documentElement.classList.contains('dark');
+    const isDark = document.body.classList.contains('dark');
     const next = isDark ? 'light' : 'dark';
     localStorage.setItem(THEME_KEY, next);
     applyTheme(next);
   });
 }
-
 initTheme();
 </script>
 </body>
