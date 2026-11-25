@@ -1,65 +1,180 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Расписание — выбор класса</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f3ff">
+  <title>Школьное расписание</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .home-hero {
+      padding: 36px;
+      margin-bottom: 24px;
+      border-radius: 28px;
+      background: linear-gradient(120deg, #4f46e5, #8b5cf6, #a78bfa);
+      color: white;
+      box-shadow: 0 16px 45px rgba(99,102,241,.22);
+    }
+    .home-hero h1 {
+      color: white;
+      font-size: clamp(28px, 5vw, 42px);
+      letter-spacing: -1.5px;
+    }
+    .home-hero p {
+      color: rgba(255,255,255,.85);
+      font-size: 15px;
+      margin-top: 10px;
+    }
+    .hero-label {
+      display: inline-block;
+      margin-bottom: 18px;
+      padding: 7px 12px;
+      border-radius: 30px;
+      background: rgba(255,255,255,.18);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .home-section { margin-top: 26px; }
+    .home-section h2 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      color: inherit;
+    }
+    .classes-grid {
+      grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+    }
+    .class-card.available {
+      min-height: 145px;
+    }
+    .class-card.disabled {
+      cursor: not-allowed;
+    }
+    .class-card .class-num { font-size: 38px; }
+    .class-status {
+      font-size: 12px;
+      color: #16a34a;
+      font-weight: 700;
+    }
+    body.dark .class-status { color: #86efac; }
+    .home-footer {
+      text-align: center;
+      color: #86868b;
+      font-size: 12px;
+      padding: 28px 10px 70px;
+    }
+    @media(max-width:600px) {
+      .home-hero { padding: 26px 22px; }
+      .classes-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+  </style>
 </head>
 <body>
 <div class="wrap">
+
   <header>
     <div>
-      <h1>📚 Расписание</h1>
-      <p>Выберите класс, чтобы посмотреть расписание.</p>
+      <h1>📚 Школьное расписание</h1>
+      <p>Всё расписание вашей школы в одном месте</p>
     </div>
   </header>
 
-  <div class="classes-panel">
-    <div class="classes-title">Классы</div>
-    <div class="classes-subtitle">Доступен пока только 10 класс.</div>
-    <div class="classes-grid">
-      <div class="class-card disabled"><span class="class-num">5</span><span class="class-label">Класс</span><span class="class-card-soon">🔒 Скоро</span></div>
-      <div class="class-card disabled"><span class="class-num">6</span><span class="class-label">Класс</span><span class="class-card-soon">🔒 Скоро</span></div>
-      <div class="class-card disabled"><span class="class-num">7</span><span class="class-label">Класс</span><span class="class-card-soon">🔒 Скоро</span></div>
-      <div class="class-card disabled"><span class="class-num">8</span><span class="class-label">Класс</span><span class="class-card-soon">🔒 Скоро</span></div>
-      <div class="class-card disabled"><span class="class-num">9</span><span class="class-label">Класс</span><span class="class-card-soon">🔒 Скоро</span></div>
-      <a class="class-card available" href="schedule10.html"><span class="class-num">10</span><span class="class-label">Класс</span></a>
-      <div class="class-card disabled"><span class="class-num">11</span><span class="class-label">Класс</span><span class="class-card-soon">🔒 Скоро</span></div>
+  <section class="home-hero">
+    <span class="hero-label">🎓 УЧЕБНЫЙ ПОРТАЛ</span>
+    <h1>Твой учебный день<br>под контролем</h1>
+    <p>Выбери свой класс и быстро найди нужный урок.</p>
+  </section>
+
+  <section class="classes-panel">
+    <div class="classes-title">Выбери свой класс</div>
+    <div class="classes-subtitle">Доступность расписания обновляется автоматически.</div>
+    <div class="classes-grid" id="classes-grid">
+      <p>Загружаем список классов...</p>
     </div>
+  </section>
+
+  <div class="home-footer">
+    Школьное расписание · Учебный портал
   </div>
+
 </div>
 
-<button class="theme-toggle" id="theme-toggle" type="button" aria-label="Переключить тему">
+<button class="theme-toggle" id="theme-toggle" type="button">
   <span class="theme-icon">🌙</span>
   <span class="theme-text">Ночная</span>
 </button>
 
 <script>
 const THEME_KEY = 'schedule_theme';
+
 function applyTheme(theme) {
-  const btn = document.getElementById('theme-toggle');
-  const icon = btn.querySelector('.theme-icon');
-  const text = btn.querySelector('.theme-text');
-  if (theme === 'dark') {
-    document.body.classList.add('dark');
-    icon.textContent = '☀️'; text.textContent = 'Дневная';
-  } else {
-    document.body.classList.remove('dark');
-    icon.textContent = '🌙'; text.textContent = 'Ночная';
-  }
+  const dark = theme === 'dark';
+  document.body.classList.toggle('dark', dark);
+  document.querySelector('.theme-icon').textContent = dark ? '☀️' : '🌙';
+  document.querySelector('.theme-text').textContent = dark ? 'Дневная' : 'Ночная';
 }
+
 function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY) || 'light';
-  applyTheme(saved);
+  applyTheme(localStorage.getItem(THEME_KEY) || 'light');
+
   document.getElementById('theme-toggle').addEventListener('click', () => {
-    const isDark = document.body.classList.contains('dark');
-    const next = isDark ? 'light' : 'dark';
+    const next = document.body.classList.contains('dark') ? 'light' : 'dark';
     localStorage.setItem(THEME_KEY, next);
     applyTheme(next);
   });
 }
+
+async function loadClasses() {
+  const container = document.getElementById('classes-grid');
+
+  try {
+    const response = await fetch('data.json?t=' + Date.now());
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+
+    const data = await response.json();
+    container.innerHTML = '';
+
+    const classes = [...new Set(
+      Object.keys(data).map(name => name.match(/^\d+/)?.[0]).filter(Boolean)
+    )].sort((a, b) => Number(a) - Number(b));
+
+    for (let i = 5; i <= 11; i++) {
+      const card = document.createElement('a');
+      const available = classes.includes(String(i));
+
+      card.className = 'class-card ' + (available ? 'available' : 'disabled');
+
+      if (available) {
+        card.href = 'schedule.html?class=' + i;
+      } else {
+        card.href = '#';
+        card.addEventListener('click', event => event.preventDefault());
+      }
+
+      const num = document.createElement('span');
+      num.className = 'class-num';
+      num.textContent = i;
+
+      const label = document.createElement('span');
+      label.className = 'class-label';
+      label.textContent = 'Класс';
+
+      card.append(num, label);
+
+      const status = document.createElement('span');
+      status.className = available ? 'class-status' : 'class-card-soon';
+      status.textContent = available ? '✓ Доступен' : '🔒 Скоро';
+
+      card.appendChild(status);
+      container.appendChild(card);
+    }
+  } catch (error) {
+    container.textContent = 'Не удалось загрузить классы. Обновите страницу.';
+  }
+}
+
 initTheme();
+loadClasses();
 </script>
 </body>
 </html>
