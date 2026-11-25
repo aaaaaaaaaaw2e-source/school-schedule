@@ -1,0 +1,241 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Расписание класса</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.schedule-heading {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.schedule-info {
+  color:#777;
+  font-size:13px;
+  margin-top:7px;
+}
+body.dark .schedule-info { color:#aaa; }
+.schedule-empty {
+  padding:30px;
+  text-align:center;
+  color:#888;
+}
+.schedule-error {
+  padding:18px;
+  border-radius:14px;
+  background:rgba(239,68,68,.1);
+  color:#dc2626;
+  margin-bottom:20px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1 id="page-title">📅 Расписание</h1>
+    <p>Выберите класс и группу для просмотра уроков.</p>
+  </div>
+  <a class="back-link" href="index.html">← На главную</a>
+</header>
+
+<div id="error"></div>
+
+<div class="controls">
+  <div class="control-row">
+    <span class="control-label">Класс:</span>
+    <div class="btn-group" id="class-btns"></div>
+  </div>
+  <div class="control-row">
+    <span class="control-label">Группа:</span>
+    <div class="btn-group" id="group-btns"></div>
+  </div>
+</div>
+
+<div class="table-container">
+  <div class="schedule-heading">
+    <div>
+      <h2 id="table-title">Расписание уроков</h2>
+      <p class="schedule-info" id="table-info"></p>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="lesson-num">Урок</th>
+        <th class="day-header">Понедельник</th>
+        <th class="day-header">Вторник</th>
+        <th class="day-header">Среда</th>
+        <th class="day-header">Четверг</th>
+        <th class="day-header">Пятница</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div id="empty-hint" class="schedule-empty" hidden>
+    📭 Расписание пока не заполнено.
+  </div>
+</div>
+
+</div>
+
+<button class="theme-toggle" id="theme-toggle" type="button">
+  <span class="theme-icon">🌙</span>
+  <span class="theme-text">Ночная</span>
+</button>
+
+<script>
+const THEME_KEY = 'schedule_theme';
+
+let DATA = {};
+let CURRENT_CLASS = '';
+let CURRENT_GROUP = '';
+
+function applyTheme(theme) {
+  const dark = theme === 'dark';
+  document.body.classList.toggle('dark', dark);
+  document.querySelector('.theme-icon').textContent = dark ? '☀️' : '🌙';
+  document.querySelector('.theme-text').textContent = dark ? 'Дневная' : 'Ночная';
+}
+
+function initTheme() {
+  applyTheme(localStorage.getItem(THEME_KEY) || 'light');
+
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const next = document.body.classList.contains('dark') ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, next);
+    applyTheme(next);
+  });
+}
+
+function getGrade(name) {
+  return name.match(/^\d+/)?.[0] || '';
+}
+
+function getClasses() {
+  const grade = new URLSearchParams(location.search).get('class');
+  return Object.keys(DATA).filter(name => getGrade(name) === grade);
+}
+
+function renderButtons() {
+  const classBox = document.getElementById('class-btns');
+  const groupBox = document.getElementById('group-btns');
+
+  classBox.innerHTML = '';
+  groupBox.innerHTML = '';
+
+  getClasses().forEach(cls => {
+    const btn = document.createElement('button');
+    btn.className = 'ctrl-btn' + (cls === CURRENT_CLASS ? ' active' : '');
+    btn.textContent = cls;
+
+    btn.addEventListener('click', () => {
+      CURRENT_CLASS = cls;
+      CURRENT_GROUP = Object.keys(DATA[cls] || {})[0] || '';
+      renderButtons();
+      renderTable();
+    });
+
+    classBox.appendChild(btn);
+  });
+
+  Object.keys(DATA[CURRENT_CLASS] || {}).forEach(group => {
+    const btn = document.createElement('button');
+    btn.className = 'ctrl-btn' + (group === CURRENT_GROUP ? ' active' : '');
+    btn.textContent = group;
+
+    btn.addEventListener('click', () => {
+      CURRENT_GROUP = group;
+      renderButtons();
+      renderTable();
+    });
+
+    groupBox.appendChild(btn);
+  });
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tbody');
+  const empty = document.getElementById('empty-hint');
+  const info = document.getElementById('table-info');
+
+  tbody.innerHTML = '';
+
+  const grid = DATA[CURRENT_CLASS]?.[CURRENT_GROUP]?.grid;
+
+  document.getElementById('page-title').textContent =
+    '📅 Расписание ' + CURRENT_CLASS;
+
+  document.getElementById('table-title').textContent =
+    CURRENT_CLASS + ' · ' + CURRENT_GROUP;
+
+  info.textContent = 'Учебная неделя · Понедельник — пятница';
+
+  if (!Array.isArray(grid) || grid.length === 0) {
+    empty.hidden = false;
+    return;
+  }
+
+  empty.hidden = true;
+
+  grid.forEach((row, index) => {
+    const tr = document.createElement('tr');
+
+    const number = document.createElement('td');
+    number.className = 'lesson-num';
+    number.textContent = (index + 1) + ' урок';
+    tr.appendChild(number);
+
+    for (let day = 0; day < 5; day++) {
+      const td = document.createElement('td');
+      td.className = 'cell';
+      td.textContent = row?.[day] || '';
+      tr.appendChild(td);
+    }
+
+    tbody.appendChild(tr);
+  });
+}
+
+async function loadSchedule() {
+  try {
+    const response = await fetch('data.json?t=' + Date.now());
+    if (!response.ok) throw new Error('Не удалось загрузить data.json');
+
+    DATA = await response.json();
+
+    const classes = getClasses();
+
+    if (!classes.length) {
+      document.getElementById('error').textContent =
+        'Для этого класса расписание пока не опубликовано.';
+      document.getElementById('error').className = 'schedule-error';
+      document.querySelector('.controls').hidden = true;
+      document.querySelector('.table-container').hidden = true;
+      return;
+    }
+
+    CURRENT_CLASS = classes[0];
+    CURRENT_GROUP = Object.keys(DATA[CURRENT_CLASS])[0] || '';
+
+    renderButtons();
+    renderTable();
+  } catch (error) {
+    document.getElementById('error').textContent =
+      'Ошибка загрузки расписания: ' + error.message;
+    document.getElementById('error').className = 'schedule-error';
+  }
+}
+
+initTheme();
+loadSchedule();
+</script>
+</body>
+</html>
