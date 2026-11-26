@@ -1,180 +1,206 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#f5f3ff">
+  <meta name="theme-color" content="#111426">
+  <meta name="description" content="Электронное расписание занятий школы. Выберите свой класс и посмотрите расписание.">
   <title>Школьное расписание</title>
+  <script>
+    (function () {
+      try {
+        const theme = localStorage.getItem('schedule_theme') || 'light';
+        if (theme === 'dark') document.documentElement.classList.add('dark');
+      } catch (_) {}
+    })();
+  </script>
   <link rel="stylesheet" href="style.css">
-  <style>
-    .home-hero {
-      padding: 36px;
-      margin-bottom: 24px;
-      border-radius: 28px;
-      background: linear-gradient(120deg, #4f46e5, #8b5cf6, #a78bfa);
-      color: white;
-      box-shadow: 0 16px 45px rgba(99,102,241,.22);
-    }
-    .home-hero h1 {
-      color: white;
-      font-size: clamp(28px, 5vw, 42px);
-      letter-spacing: -1.5px;
-    }
-    .home-hero p {
-      color: rgba(255,255,255,.85);
-      font-size: 15px;
-      margin-top: 10px;
-    }
-    .hero-label {
-      display: inline-block;
-      margin-bottom: 18px;
-      padding: 7px 12px;
-      border-radius: 30px;
-      background: rgba(255,255,255,.18);
-      font-size: 12px;
-      font-weight: 700;
-    }
-    .home-section { margin-top: 26px; }
-    .home-section h2 {
-      font-size: 20px;
-      margin-bottom: 16px;
-      color: inherit;
-    }
-    .classes-grid {
-      grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
-    }
-    .class-card.available {
-      min-height: 145px;
-    }
-    .class-card.disabled {
-      cursor: not-allowed;
-    }
-    .class-card .class-num { font-size: 38px; }
-    .class-status {
-      font-size: 12px;
-      color: #16a34a;
-      font-weight: 700;
-    }
-    body.dark .class-status { color: #86efac; }
-    .home-footer {
-      text-align: center;
-      color: #86868b;
-      font-size: 12px;
-      padding: 28px 10px 70px;
-    }
-    @media(max-width:600px) {
-      .home-hero { padding: 26px 22px; }
-      .classes-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
-    }
-  </style>
 </head>
 <body>
-<div class="wrap">
+  <main class="wrap">
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Главная страница расписания">
+        <span class="brand-mark" aria-hidden="true">S</span>
+        <span class="brand-copy">
+          <span class="brand-name">SCHEDULE<span class="brand-dot">.</span></span>
+          <span class="brand-caption">ШКОЛЬНЫЙ ПОРТАЛ</span>
+        </span>
+      </a>
+      <a class="btn admin-link" href="admin.html" aria-label="Открыть панель администратора">
+        <span aria-hidden="true">⚙</span><span>Администрирование</span>
+      </a>
+    </header>
 
-  <header>
-    <div>
-      <h1>📚 Школьное расписание</h1>
-      <p>Всё расписание вашей школы в одном месте</p>
-    </div>
-  </header>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <span class="hero-kicker"><span class="live-dot"></span> УЧЕБНОЕ ПРОСТРАНСТВО</span>
+        <h2 id="hero-title">Твоя неделя.<br><span>Твой ритм.</span></h2>
+        <p>Всё расписание школы — в одном месте. Выбери свой класс и узнай, что сегодня в планах.</p>
+        <a class="hero-action" href="#classes-title">Выбрать класс <span aria-hidden="true">↘</span></a>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="hero-orbit orbit-one"></div>
+        <div class="hero-orbit orbit-two"></div>
+        <div class="hero-calendar">
+          <div class="calendar-top"><i></i><i></i><i></i></div>
+          <div class="calendar-label">WEEK<br>PLANNER</div>
+          <div class="calendar-grid"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div>
+          <div class="calendar-check">✓</div>
+        </div>
+        <span class="art-spark spark-a">✳</span><span class="art-spark spark-b">✦</span>
+      </div>
+    </section>
 
-  <section class="home-hero">
-    <span class="hero-label">🎓 УЧЕБНЫЙ ПОРТАЛ</span>
-    <h1>Твой учебный день<br>под контролем</h1>
-    <p>Выбери свой класс и быстро найди нужный урок.</p>
-  </section>
+    <section class="classes-panel" aria-labelledby="classes-title">
+      <div class="section-heading">
+        <div>
+          <span class="section-overline">ТВОЙ МАРШРУТ</span>
+          <h2 id="classes-title">Выбери свой класс</h2>
+          <p id="classes-count">Загружаем список классов…</p>
+        </div>
+      </div>
+      <div id="classes-grid" class="classes-grid" aria-live="polite">
+        <div class="empty-state">Загружаем расписание…</div>
+      </div>
+    </section>
 
-  <section class="classes-panel">
-    <div class="classes-title">Выбери свой класс</div>
-    <div class="classes-subtitle">Доступность расписания обновляется автоматически.</div>
-    <div class="classes-grid" id="classes-grid">
-      <p>Загружаем список классов...</p>
-    </div>
-  </section>
+    <footer class="home-footer">
+      <span class="footer-line"></span>
+      <span>СОЗДАНО ДЛЯ УДОБНОЙ УЧЁБЫ</span>
+      <span id="current-year"></span>
+    </footer>
+  </main>
 
-  <div class="home-footer">
-    Школьное расписание · Учебный портал
-  </div>
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Переключить тему">
+    <span class="theme-icon" aria-hidden="true">🌙</span>
+    <span class="theme-text">Ночная тема</span>
+  </button>
 
-</div>
+  <script>
+    'use strict';
 
-<button class="theme-toggle" id="theme-toggle" type="button">
-  <span class="theme-icon">🌙</span>
-  <span class="theme-text">Ночная</span>
-</button>
+    const THEME_KEY = 'schedule_theme';
+    const grid = document.getElementById('classes-grid');
+    const count = document.getElementById('classes-count');
 
-<script>
-const THEME_KEY = 'schedule_theme';
-
-function applyTheme(theme) {
-  const dark = theme === 'dark';
-  document.body.classList.toggle('dark', dark);
-  document.querySelector('.theme-icon').textContent = dark ? '☀️' : '🌙';
-  document.querySelector('.theme-text').textContent = dark ? 'Дневная' : 'Ночная';
-}
-
-function initTheme() {
-  applyTheme(localStorage.getItem(THEME_KEY) || 'light');
-
-  document.getElementById('theme-toggle').addEventListener('click', () => {
-    const next = document.body.classList.contains('dark') ? 'light' : 'dark';
-    localStorage.setItem(THEME_KEY, next);
-    applyTheme(next);
-  });
-}
-
-async function loadClasses() {
-  const container = document.getElementById('classes-grid');
-
-  try {
-    const response = await fetch('data.json?t=' + Date.now());
-    if (!response.ok) throw new Error('HTTP ' + response.status);
-
-    const data = await response.json();
-    container.innerHTML = '';
-
-    const classes = [...new Set(
-      Object.keys(data).map(name => name.match(/^\d+/)?.[0]).filter(Boolean)
-    )].sort((a, b) => Number(a) - Number(b));
-
-    for (let i = 5; i <= 11; i++) {
-      const card = document.createElement('a');
-      const available = classes.includes(String(i));
-
-      card.className = 'class-card ' + (available ? 'available' : 'disabled');
-
-      if (available) {
-        card.href = 'schedule.html?class=' + i;
-      } else {
-        card.href = '#';
-        card.addEventListener('click', event => event.preventDefault());
-      }
-
-      const num = document.createElement('span');
-      num.className = 'class-num';
-      num.textContent = i;
-
-      const label = document.createElement('span');
-      label.className = 'class-label';
-      label.textContent = 'Класс';
-
-      card.append(num, label);
-
-      const status = document.createElement('span');
-      status.className = available ? 'class-status' : 'class-card-soon';
-      status.textContent = available ? '✓ Доступен' : '🔒 Скоро';
-
-      card.appendChild(status);
-      container.appendChild(card);
+    function safeStorageGet(key, fallback) {
+      try { return localStorage.getItem(key) || fallback; }
+      catch (_) { return fallback; }
     }
-  } catch (error) {
-    container.textContent = 'Не удалось загрузить классы. Обновите страницу.';
-  }
-}
 
-initTheme();
-loadClasses();
-</script>
+    function safeStorageSet(key, value) {
+      try { localStorage.setItem(key, value); }
+      catch (_) { /* Сайт продолжает работать, даже если storage недоступен. */ }
+    }
+
+    function applyTheme(theme) {
+      const isDark = theme === 'dark';
+      document.documentElement.classList.toggle('dark', isDark);
+      document.querySelector('.theme-icon').textContent = isDark ? '☀️' : '🌙';
+      document.querySelector('.theme-text').textContent = isDark ? 'Светлая тема' : 'Тёмная тема';
+      document.getElementById('theme-toggle').setAttribute(
+        'aria-label', isDark ? 'Включить светлую тему' : 'Включить тёмную тему'
+      );
+    }
+
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+      safeStorageSet(THEME_KEY, next);
+      applyTheme(next);
+    });
+
+    function getValidClasses(data) {
+      if (!data || typeof data !== 'object' || Array.isArray(data)) return [];
+      return Object.entries(data)
+        .filter(([name, groups]) =>
+          /^\d{1,2}[А-ЯЁA-Z]?$/i.test(name) &&
+          groups && typeof groups === 'object' && !Array.isArray(groups)
+        )
+        .map(([name]) => name)
+        .sort((a, b) => {
+          const na = Number(a.match(/^\d+/)[0]);
+          const nb = Number(b.match(/^\d+/)[0]);
+          return na - nb || a.localeCompare(b, 'ru');
+        });
+    }
+
+    function createClassCard(className) {
+      const link = document.createElement('a');
+      link.className = 'class-card';
+      link.href = 'schedule.html?class=' + encodeURIComponent(className);
+
+      const top = document.createElement('div');
+      top.className = 'class-card-top';
+
+      const number = document.createElement('span');
+      number.className = 'class-card-number';
+      number.textContent = className.match(/^\d+/)?.[0] || '•';
+
+      const arrow = document.createElement('span');
+      arrow.className = 'class-card-arrow';
+      arrow.setAttribute('aria-hidden', 'true');
+      arrow.textContent = '↗';
+
+      top.append(number, arrow);
+
+      const bottom = document.createElement('div');
+      const title = document.createElement('div');
+      title.className = 'class-card-title';
+      title.textContent = className;
+
+      const subtitle = document.createElement('div');
+      subtitle.className = 'class-card-subtitle';
+      subtitle.textContent = 'Открыть расписание';
+
+      bottom.append(title, subtitle);
+      link.append(top, bottom);
+      return link;
+    }
+
+    async function loadClasses() {
+      try {
+        const response = await fetch('data.json?t=' + Date.now(), { cache: 'no-store' });
+        if (!response.ok) throw new Error('Не удалось загрузить data.json (' + response.status + ')');
+
+        const data = await response.json();
+        const classes = getValidClasses(data);
+        grid.replaceChildren();
+
+        if (!classes.length) {
+          count.textContent = 'Пока нет доступных классов';
+          const empty = document.createElement('div');
+          empty.className = 'empty-state';
+          const title = document.createElement('strong');
+          title.textContent = 'Расписание пока не добавлено';
+          const description = document.createElement('span');
+          description.textContent = 'Когда администратор добавит классы, они появятся здесь.';
+          empty.append(title, description);
+          grid.append(empty);
+          return;
+        }
+
+        classes.forEach(className => grid.append(createClassCard(className)));
+        const n = classes.length;
+        const word = (n % 10 === 1 && n % 100 !== 11) ? 'класс доступен' :
+          (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 'класса доступны' : 'классов доступно';
+        count.textContent = n + ' ' + word;
+      } catch (error) {
+        count.textContent = 'Не удалось получить список классов';
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        const title = document.createElement('strong');
+        title.textContent = 'Не получилось загрузить расписание';
+        const description = document.createElement('span');
+        description.textContent = 'Проверьте подключение к интернету и попробуйте обновить страницу.';
+        empty.append(title, description);
+        grid.replaceChildren(empty);
+        console.error(error);
+      }
+    }
+
+    applyTheme(safeStorageGet(THEME_KEY, 'light'));
+    document.getElementById('current-year').textContent = '· ' + new Date().getFullYear();
+    loadClasses();
+  </script>
 </body>
 </html>
